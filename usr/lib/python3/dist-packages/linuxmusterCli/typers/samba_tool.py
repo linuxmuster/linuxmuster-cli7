@@ -31,12 +31,12 @@ def drives(school: Annotated[str, typer.Option("--school", "-s")] = 'default-sch
     drives.add_column("Label", style="magenta")
     drives.add_column("Disable", style="magenta")
 
-    for name, details in GPOS[f"sophomorix:school:{school}"].drives.drives_dict.items():
+    for drive in GPOS[f"sophomorix:school:{school}"].drivemgr.aslist():
         drives.add_row(
-                name, 
-                details['letter'], 
-                str(details['userLetter']), 
-                details['label'], 
-                str(details['disabled'])
+                drive['id'], 
+                drive['letter'], 
+                str(drive['userLetter']), 
+                drive['label'], 
+                str(drive['disabled'])
         )
     console.print(drives)
