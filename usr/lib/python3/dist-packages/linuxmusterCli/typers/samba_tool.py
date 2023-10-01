@@ -30,8 +30,8 @@ def drives(school: Annotated[str, typer.Option("--school", "-s")] = 'default-sch
     drives.add_column("Use letter", style="cyan")
     drives.add_column("Label", style="magenta")
     drives.add_column("Disable", style="magenta")
-    drives.add_column("Visible teachers", style="magenta")
-    drives.add_column("Visible students", style="magenta")
+    # drives.add_column("Visible teachers", style="magenta")
+    # drives.add_column("Visible students", style="magenta")
 
     for drive in GPOS[f"sophomorix:school:{school}"].drivemgr.drives:
         drives.add_row(
@@ -40,7 +40,7 @@ def drives(school: Annotated[str, typer.Option("--school", "-s")] = 'default-sch
                 str(drive.userLetter), 
                 drive.label, 
                 str(drive.disabled),
-                str(drive.visible('teachers')),
-                str(drive.visible('students'))
+                # str(drive.visible('teachers')),
+                # str(drive.visible('students'))
         )
     console.print(drives)
