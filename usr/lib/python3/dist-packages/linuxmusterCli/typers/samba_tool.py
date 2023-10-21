@@ -3,7 +3,7 @@ from typing_extensions import Annotated
 
 from rich.console import Console
 from rich.table import Table
-from linuxmusterTools.sambaTool import GPOManager
+from linuxmusterTools.samba import GPOManager
 
 gpomgr = GPOManager()
 GPOS = gpomgr.gpos
