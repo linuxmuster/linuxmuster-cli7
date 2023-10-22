@@ -1,2 +1,2 @@
-from .samba_tool import *
+from .samba import *
 from .linbo import *
