@@ -3,10 +3,13 @@ from typing_extensions import Annotated
 
 from rich.console import Console
 from rich.table import Table
-from linuxmusterTools.samba import GPOManager
+from linuxmusterTools.samba import GPOManager, smbstatus
+
 
 gpomgr = GPOManager()
 GPOS = gpomgr.gpos
+
+conn = smbstatus.SMBConnections()
 
 console = Console(emoji=False)
 app = typer.Typer()
@@ -44,3 +47,44 @@ def drives(school: Annotated[str, typer.Option("--school", "-s")] = 'default-sch
                 # str(drive.visible('students'))
         )
     console.print(drives)
+
+@app.command()
+def connections(
+        school: Annotated[str, typer.Option("--school", "-s")] = 'default-school',
+        users: Annotated[bool, typer.Option("--users", "-u")] = False,
+        machines: Annotated[bool, typer.Option("--machines", "-m")] = False
+    ):
+
+    show_all = not (users ^ machines)
+
+    conn = smbstatus.SMBConnections(school)
+
+    if show_all or users:
+        users_connections = Table()
+        users_connections.add_column("User", style="green")
+        users_connections.add_column("IP", style="cyan")
+        users_connections.add_column("Hostname", style="cyan")
+
+        for user,details in conn.users.items():
+            users_connections.add_row(
+                    user,
+                    details.machine,
+                    details.hostname,
+            )
+
+        console.print(users_connections)
+
+    if show_all or machines:
+        machines_connections = Table()
+        machines_connections.add_column("Machine", style="green")
+        machines_connections.add_column("IP", style="cyan")
+
+        conn.get_machines()
+        for machine, details in conn.machines.items():
+            machines_connections.add_row(
+                    machine,
+                    details.machine,
+            )
+
+        console.print(machines_connections)
+
