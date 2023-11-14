@@ -1,3 +1,9 @@
+linuxmuster-cli7 (7.2.1) lmn72; urgency=medium
+
+  * First release adding linbo, samba, version, devices and users commands.
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Tue, 14 Nov 2023 22:23:57 +0100
+
 linuxmuster-cli7 (0.0.1) lmn72; urgency=medium
 
   * First test package 
