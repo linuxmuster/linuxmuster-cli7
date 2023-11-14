@@ -11,14 +11,14 @@ msg()
     message=$1
     echo
     # Bold and orange font for linuxmuster.net
-    echo "\e[1m\e[38;5;214m$message\e[39m\e[0m"
+    echo -e "\e[1m\e[38;5;214m$message\e[39m\e[0m"
     echo
 }
 
 case "$1" in
     install|configure)
         msg "Install Python requirements"
-        /usr/bin/python3 -m pip install -r /usr/lib/python3/dist-packages/linuxmusterApi7/requirements.txt
+        /usr/bin/python3 -m pip install -r /usr/lib/python3/dist-packages/linuxmusterCli7/requirements.txt
         
     ;;
 
