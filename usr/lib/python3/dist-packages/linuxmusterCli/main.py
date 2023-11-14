@@ -15,7 +15,7 @@ app.add_typer(linbo.app, name='linbo')
 app.add_typer(devices.app, name='devices')
 app.add_typer(users.app, name='users')
 
-@app.command()
+@app.command(help="Lists linuxmuster.net packages installed.")
 def version():
     packages = Table()
     packages.add_column("Status", style="green")

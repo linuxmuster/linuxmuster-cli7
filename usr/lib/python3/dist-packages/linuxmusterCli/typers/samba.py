@@ -12,7 +12,7 @@ GPOS = gpomgr.gpos
 conn = smbstatus.SMBConnections()
 
 console = Console(emoji=False)
-app = typer.Typer()
+app = typer.Typer(help="Manage samba shares and connections.")
 
 @app.command(help="Display all GPOS details on the system.")
 def gpos():
