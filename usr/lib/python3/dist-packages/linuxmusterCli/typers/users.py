@@ -10,10 +10,13 @@ from linuxmusterTools.ldapconnector import LMNLdapReader as lr
 console = Console(emoji=False)
 app = typer.Typer()
 
-@app.command()
+@app.callback(
+    invoke_without_command=True,
+    help="""List all users which name, login or role contain FILTER_STR."""
+)
 def ls(
+        filter_str: Annotated[str, typer.Argument()] = '',
         school: Annotated[str, typer.Option("--school", "-s")] = 'default-school',
-        filter_str: Annotated[str, typer.Option("--filter", "-f")] = '',
         admins: Annotated[bool, typer.Option("--admins", "-a")] = False,
         teachers: Annotated[bool, typer.Option("--teachers", "-t")] = False,
         students: Annotated[bool, typer.Option("--students", "-u")] = False,
