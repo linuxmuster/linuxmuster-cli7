@@ -11,10 +11,13 @@ from linuxmusterTools.ldapconnector import LMNLdapReader as lr
 console = Console(emoji=False)
 app = typer.Typer()
 
-@app.command()
+@app.callback(
+    invoke_without_command=True,
+    help="""List all devices which hostname, mac or room contain FILTER_STR."""
+)
 def ls(
+        filter_str: Annotated[str, typer.Argument()] = '',
         school: Annotated[str, typer.Option("--school", "-s")] = 'default-school',
-        filter_str: Annotated[str, typer.Option("--filter", "-f")] = ''
         ):
     if school != 'default-school':
         prefix = f'{school}.'
