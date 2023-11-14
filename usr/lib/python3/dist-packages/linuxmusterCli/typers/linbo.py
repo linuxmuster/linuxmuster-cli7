@@ -10,10 +10,10 @@ from linuxmusterTools.linbo import LinboImageManager
 
 LINBO_PATH = '/srv/linbo'
 console = Console(emoji=False)
-app = typer.Typer()
+app = typer.Typer(help="Manage linbo images and groups.")
 lim = LinboImageManager()
 
-@app.command()
+@app.command(help="Display all available linbo groups.")
 def groups(school: Annotated[str, typer.Option("--school", "-s")] = 'default-school'):
     groups = Table()
     groups.add_column("Groups", style="green")
@@ -42,7 +42,7 @@ def groups(school: Annotated[str, typer.Option("--school", "-s")] = 'default-sch
             groups.add_row(group, str(devices_count))
     console.print(groups)
 
-@app.command()
+@app.command(help="Display all available linbo images.")
 def images():
     images = Table(show_lines=True)
     images.add_column("Name", style="green")
