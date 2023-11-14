@@ -14,7 +14,7 @@ conn = smbstatus.SMBConnections()
 console = Console(emoji=False)
 app = typer.Typer()
 
-@app.command()
+@app.command(help="Display all GPOS details on the system.")
 def gpos():
     gpos = Table()
     gpos.add_column("Name", style="green")
@@ -25,7 +25,7 @@ def gpos():
         gpos.add_row(name, details.gpo, details.path)
     console.print(gpos)
 
-@app.command()
+@app.command(help="Display all configured drives in linuxmuster.net for the specified school.")
 def drives(school: Annotated[str, typer.Option("--school", "-s")] = 'default-school'):
     drives = Table()
     drives.add_column("Name", style="green")
@@ -48,8 +48,8 @@ def drives(school: Annotated[str, typer.Option("--school", "-s")] = 'default-sch
         )
     console.print(drives)
 
-@app.command()
-def connections(
+@app.command(help="Display all current samba connections.")
+def status(
         school: Annotated[str, typer.Option("--school", "-s")] = 'default-school',
         users: Annotated[bool, typer.Option("--users", "-u")] = False,
         machines: Annotated[bool, typer.Option("--machines", "-m")] = False
