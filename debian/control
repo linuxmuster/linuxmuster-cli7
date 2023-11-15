@@ -7,5 +7,5 @@ Standards-Version: 5.0.0
 
 Package: linuxmuster-cli7
 Architecture: all
-Depends: python3
+Depends: python3, linuxmuster-tools7
 Description: Tools and CLI for the linuxmuster.net 7 server.
