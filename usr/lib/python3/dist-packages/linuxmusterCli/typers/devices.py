@@ -37,10 +37,10 @@ def ls(
 
     ldap_data = lr.get('/devices', attributes=['cn', 'sophomorixComputerMAC'])
 
-    devices = Table(title=f"{len(devices_data)} devices")
+    devices = Table(title=f"{len(devices_data)} device(s)")
     devices.add_column("Room", style="cyan")
     devices.add_column("Hostname", style="green")
-    devices.add_column("IP", style="bright_magenta")
+    devices.add_column("IP", style="yellow")
     devices.add_column("Mac", style="bright_magenta")
     devices.add_column("LDAP", style="bright_magenta")
     for device in devices_data:
