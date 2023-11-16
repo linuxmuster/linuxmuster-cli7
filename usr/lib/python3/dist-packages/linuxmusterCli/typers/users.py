@@ -21,11 +21,7 @@ def ls(
         teachers: Annotated[bool, typer.Option("--teachers", "-t")] = False,
         students: Annotated[bool, typer.Option("--students", "-u")] = False,
         ):
-    if school != 'default-school':
-        prefix = f'{school}.'
-    else:
-        prefix = ''
-   
+
     filter_str = filter_str.lower()
 
     if admins:
@@ -37,14 +33,18 @@ def ls(
     else:
         url = '/users'
 
-    users_data = lr.get(url, attributes=[
-        'displayName', 
-        'sn', 
-        'givenName', 
-        'sAMAccountName', 
-        'sophomorixAdminClass', 
-        'sophomorixRole', 
-        'sophomorixStatus']
+    users_data = lr.get(
+        url,
+        attributes=[
+            'displayName',
+            'sn',
+            'givenName',
+            'sAMAccountName',
+            'sophomorixAdminClass',
+            'sophomorixRole',
+            'sophomorixStatus'
+        ],
+        school = school,
     )
 
     users_data = list(filter(
@@ -54,13 +54,13 @@ def ls(
 
     users_data = sorted(users_data, key=lambda u: (u['sophomorixRole'], u['sn'], u['givenName']))
 
-    users = Table(title=f"{len(users_data)} users")
+    users = Table(title=f"{len(users_data)} user(s)")
     users.add_column("Lastname", style="cyan")
-    users.add_column("Firstname", style="green")
-    users.add_column("Login", style="magenta")
-    users.add_column("Adminclass", style="magenta")
-    users.add_column("Role", style="magenta")
-    users.add_column("Status", style="magenta")
+    users.add_column("Firstname", style="cyan")
+    users.add_column("Login", style="green")
+    users.add_column("Adminclass", style="bright_magenta")
+    users.add_column("Role", style="bright_magenta")
+    users.add_column("Status", style="yellow")
     for user in users_data:
         users.add_row(user['sn'], user['givenName'], user['sAMAccountName'], user['sophomorixAdminClass'], user['sophomorixRole'], user['sophomorixStatus'])
     console.print(users)
