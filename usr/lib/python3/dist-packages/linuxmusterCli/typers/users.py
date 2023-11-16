@@ -12,7 +12,7 @@ app = typer.Typer()
 
 @app.callback(
     invoke_without_command=True,
-    help="""List all users which name, login or role contain FILTER_STR."""
+    help="""List all users which name, login or role containing FILTER_STR."""
 )
 def ls(
         filter_str: Annotated[str, typer.Argument()] = '',

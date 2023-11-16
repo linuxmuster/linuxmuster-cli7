@@ -13,7 +13,7 @@ app = typer.Typer()
 
 @app.callback(
     invoke_without_command=True,
-    help="""List all devices which hostname, mac or room contain FILTER_STR."""
+    help="""List all devices which hostname, mac or room containing FILTER_STR."""
 )
 def ls(
         filter_str: Annotated[str, typer.Argument()] = '',
