@@ -47,7 +47,7 @@ def images():
     images = Table(show_lines=True)
     images.add_column("Name", style="green")
     images.add_column("Size (MiB)", style="cyan")
-    images.add_column("Backups", style="magenta")
+    images.add_column("Backups", style="bright_magenta")
     images.add_column("Differential image", style="cyan")
     # images.add_column("Used in groups", style="cyan")
     

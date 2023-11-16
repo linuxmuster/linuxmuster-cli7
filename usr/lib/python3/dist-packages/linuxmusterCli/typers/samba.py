@@ -19,7 +19,7 @@ def gpos():
     gpos = Table()
     gpos.add_column("Name", style="green")
     gpos.add_column("GPO", style="cyan")
-    gpos.add_column("Path", style="magenta")
+    gpos.add_column("Path", style="bright_magenta")
 
     for name, details in GPOS.items():
         gpos.add_row(name, details.gpo, details.path)
@@ -29,12 +29,12 @@ def gpos():
 def drives(school: Annotated[str, typer.Option("--school", "-s")] = 'default-school'):
     drives = Table()
     drives.add_column("Name", style="green")
-    drives.add_column("Letter", style="cyan")
+    drives.add_column("Letter", style="yellow")
     drives.add_column("Use letter", style="cyan")
-    drives.add_column("Label", style="magenta")
-    drives.add_column("Disable", style="magenta")
-    # drives.add_column("Visible teachers", style="magenta")
-    # drives.add_column("Visible students", style="magenta")
+    drives.add_column("Label", style="bright_magenta")
+    drives.add_column("Disable", style="bright_magenta")
+    # drives.add_column("Visible teachers", style="bright_magenta")
+    # drives.add_column("Visible students", style="bright_magenta")
 
     for drive in GPOS[f"sophomorix:school:{school}"].drivemgr.drives:
         drives.add_row(
@@ -62,7 +62,7 @@ def status(
     if show_all or users:
         users_connections = Table()
         users_connections.add_column("User", style="green")
-        users_connections.add_column("IP", style="cyan")
+        users_connections.add_column("IP", style="yellow")
         users_connections.add_column("Hostname", style="cyan")
 
         for user,details in conn.users.items():

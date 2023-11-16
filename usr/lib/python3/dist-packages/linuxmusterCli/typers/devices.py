@@ -40,9 +40,9 @@ def ls(
     devices = Table(title=f"{len(devices_data)} devices")
     devices.add_column("Room", style="cyan")
     devices.add_column("Hostname", style="green")
-    devices.add_column("IP", style="magenta")
-    devices.add_column("Mac", style="magenta")
-    devices.add_column("LDAP", style="magenta")
+    devices.add_column("IP", style="bright_magenta")
+    devices.add_column("Mac", style="bright_magenta")
+    devices.add_column("LDAP", style="bright_magenta")
     for device in devices_data:
         for ldap_device in ldap_data:
             if device['hostname'].lower() == ldap_device['cn'].lower() and device['mac'].lower() == ldap_device['sophomorixComputerMAC'].lower():
