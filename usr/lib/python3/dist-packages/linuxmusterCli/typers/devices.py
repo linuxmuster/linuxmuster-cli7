@@ -1,4 +1,3 @@
-import os
 import typer
 from typing_extensions import Annotated
 
@@ -51,4 +50,3 @@ def ls(
         else:
             devices.add_row(device['room'], device['hostname'], device['ip'], device['mac'], "Not registered")
     console.print(devices)
-

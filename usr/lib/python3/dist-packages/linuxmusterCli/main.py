@@ -5,7 +5,7 @@ import subprocess
 
 from rich.console import Console
 from rich.table import Table
-from typers import samba, linbo, devices, users
+from typers import samba, linbo, devices, users, up
 
 
 console = Console()
@@ -14,6 +14,7 @@ app.add_typer(samba.app, name='samba')
 app.add_typer(linbo.app, name='linbo')
 app.add_typer(devices.app, name='devices')
 app.add_typer(users.app, name='users')
+app.add_typer(up.app, name='up')
 
 @app.command(help="Lists linuxmuster.net packages installed.")
 def version():
