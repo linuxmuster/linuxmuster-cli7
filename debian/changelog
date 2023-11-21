@@ -1,3 +1,12 @@
+linuxmuster-cli7 (7.2.5) lmn72; urgency=medium
+
+  * Fix school option
+  * Command up to check online clients
+  * Command user to get details from one user
+  * Better entrypoint for Python (thanks @jolly-jump)
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Tue, 21 Nov 2023 18:40:16 +0100
+
 linuxmuster-cli7 (7.2.4) lmn72; urgency=medium
 
   * Add missing dependency to linuxmuster-tools7 
