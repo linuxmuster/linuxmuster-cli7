@@ -3,7 +3,7 @@ from typing_extensions import Annotated
 
 from rich.console import Console
 from rich.table import Table
-from linuxmusterTools.samba import GPOManager, smbstatus
+from linuxmusterTools.samba import GPOManager, smbstatus, SambaToolDNS
 
 
 gpomgr = GPOManager()
@@ -88,3 +88,29 @@ def status(
 
         console.print(machines_connections)
 
+
+@app.command(help="Display all current DNS enries.")
+def dns(
+        school: Annotated[str, typer.Option("--school", "-s")] = 'default-school',
+    ):
+    
+    DNS = SambaToolDNS().list()
+    root_table = Table()
+    root_table.add_column("Type", style="green")
+    root_table.add_column("TTL", style="yellow")
+    root_table.add_column("Value", style="cyan")
+
+    dns_table = Table()
+    dns_table.add_column("Host", style="green")
+    dns_table.add_column("Type", style="green")
+    dns_table.add_column("TTL", style="yellow")
+    dns_table.add_column("Value", style="cyan")
+
+    for entry in DNS['root']:
+        root_table.add_row(entry['type'], entry['ttl'], entry['value'])
+
+    for entry in DNS['sub']:
+        dns_table.add_row(entry['host'], entry['type'], entry['ttl'], entry['value'])
+
+    console.print(root_table)
+    console.print(dns_table)
