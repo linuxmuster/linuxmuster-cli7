@@ -35,6 +35,10 @@ def ls(
 
     users_data = lr.get(f'/users/{user}', school = school)
 
+    if not users_data:
+        console.print(f"User {user} not found.")
+        return
+
     if not full:
         samba = ['sAMAccountType', 'sophomorixAdminClass', 'sophomorixAdminFile', 'sophomorixComment', 'sophomorixCreationDate', 'sophomorixDeactivationDate', 'sophomorixExamMode', 'sophomorixExitAdminClass', 'sophomorixFirstnameASCII', 'sophomorixFirstnameInitial', 'sophomorixFirstPassword', 'sophomorixIntrinsic2', 'sophomorixSchoolname', 'sophomorixSchoolPrefix', 'sophomorixStatus', 'sophomorixSurnameASCII', 'sophomorixSurnameInitial', 'sophomorixTolerationDate', 'sophomorixUnid', 'sophomorixUserToken', 'sophomorixWebuiDashboard', 'unixHomeDirectory', 'homeDrive', ]
         custom = ['sophomorixCustom1', 'sophomorixCustom2', 'sophomorixCustom3', 'sophomorixCustom4', 'sophomorixCustom5', 'sophomorixCustomMulti1', 'sophomorixCustomMulti2', 'sophomorixCustomMulti3', 'sophomorixCustomMulti4', 'sophomorixCustomMulti5']
