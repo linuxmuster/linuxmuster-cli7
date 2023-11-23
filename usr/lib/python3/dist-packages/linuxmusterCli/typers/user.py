@@ -33,7 +33,10 @@ def ls(
 
     user = user.lower()
 
-    users_data = lr.get(f'/users/{user}', school = school)
+    if user.endswith("-exam"):
+        users_data = lr.get(f'/users/exam/{user}', school = school)
+    else:
+        users_data = lr.get(f'/users/{user}', school = school)
 
     if not users_data:
         console.print(f"User {user} not found.")
