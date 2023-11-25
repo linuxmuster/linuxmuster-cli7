@@ -92,7 +92,9 @@ def status(
 @app.command(help="Display all current DNS enries.")
 def dns(
         school: Annotated[str, typer.Option("--school", "-s")] = 'default-school',
-    ):
+        root: Annotated[bool, typer.Option("--root")] = False,
+        sub: Annotated[bool, typer.Option("--sub")] = False,
+):
     
     DNS = SambaToolDNS().list()
     root_table = Table()
@@ -112,5 +114,8 @@ def dns(
     for entry in DNS['sub']:
         dns_table.add_row(entry['host'], entry['type'], entry['ttl'], entry['value'])
 
-    console.print(root_table)
-    console.print(dns_table)
+    if root or not sub:
+        console.print(root_table)
+
+    if sub or not root:
+        console.print(dns_table)
