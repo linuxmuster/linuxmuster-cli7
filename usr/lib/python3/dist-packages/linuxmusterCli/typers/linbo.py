@@ -1,11 +1,12 @@
 import os
 import typer
+from datetime import datetime
 from typing_extensions import Annotated
 
 from rich.console import Console
 from rich.table import Table
 from linuxmusterTools.lmnfile import LMNFile
-from linuxmusterTools.linbo import LinboImageManager
+from linuxmusterTools.linbo import LinboImageManager, list_workstations, last_sync_all
 
 
 LINBO_PATH = '/srv/linbo'
@@ -60,3 +61,55 @@ def images():
         images.add_row(name, size, '\n'.join(group.backups.keys()), diff)
 
     console.print(images)
+
+@app.command(help="Display last synchronisation date for all devices or the selected group.")
+def lastsync(
+    group: Annotated[str, typer.Argument()] = '',
+    school: Annotated[str, typer.Option("--school", "-s")] = 'default-school',
+):
+    # Temporary UGLY solution. The code in linuxmusterTools must be rewritten
+
+    def format(sync_data):
+        epoch = sync_data['date']
+        status = sync_data['status']
+
+        if epoch == 'Never':
+            return '[red]No date found[/red]'
+        color_map = {
+            'danger': 'red',
+            'warning': 'yellow',
+            'success': 'green'
+        }
+        color = color_map[status]
+        date = datetime.fromtimestamp(epoch).strftime('%c')
+        return f'[{color}]{date}[/{color}]'
+
+    if group:
+        devices = list_workstations(groups=[group])
+    else:
+        devices = list_workstations()
+
+    last_sync_all(devices)
+
+    for grp, hosts in devices.items():
+        images = []
+        if len(hosts['hosts']) > 0:
+            images = hosts['hosts'][0]['images']
+        if not images:
+            continue
+
+        sync = Table()
+        sync.add_column('Hostname', style="cyan")
+        sync.add_column('IP', style="cyan")
+        for image in images:
+            sync.add_column(f'Last synchronisation for {image}')
+
+        for host in hosts['hosts']:
+            sync.add_row(
+                host['hostname'],
+                host['ip'],
+                *[format(host['sync'][image]) for image in images]
+            )
+        console.print(sync)
+
+
