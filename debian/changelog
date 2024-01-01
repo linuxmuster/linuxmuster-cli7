@@ -1,3 +1,9 @@
+linuxmuster-cli7 (7.2.7) lmn72; urgency=medium
+
+  * [samba] Avoid samba library conflict 
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Mon, 01 Jan 2024 23:00:14 +0100
+
 linuxmuster-cli7 (7.2.6) lmn72; urgency=medium
 
   * [devices] Add group to output
