@@ -27,16 +27,21 @@ def outformat(value):
 )
 def ls(
         user: Annotated[str, typer.Argument()] = '',
-        school: Annotated[str, typer.Option("--school", "-s")] = 'default-school',
+        school: Annotated[str, typer.Option("--school", "-s")] = None,
         full: Annotated[bool, typer.Option("--full", "-f")] = False,
         ):
 
     user = user.lower()
 
-    if user.endswith("-exam"):
-        users_data = lr.get(f'/users/exam/{user}', school = school)
+    if school is not None:
+        kwargs = {"school": school}
     else:
-        users_data = lr.get(f'/users/{user}', school = school)
+        kwargs = {}
+
+    if user.endswith("-exam"):
+        users_data = lr.get(f'/users/exam/{user}', **kwargs)
+    else:
+        users_data = lr.get(f'/users/{user}', **kwargs)
 
     if not users_data:
         console.print(f"User {user} not found.")
