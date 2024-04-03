@@ -2,7 +2,7 @@
 
 CLI tools for the linuxmuster.net community.
 
-Actually, follwings commands are available:
+Actually, followings commands are available (add `--help` to display all options):
 
  * `lmncli version` : Show versions of installed linuxmuster.net packages
  * `lmncli devices FILTER_STR` : List all devices which hostname, mac or room containing FILTER_STR. Gives all devices when FILTER_STR is emtpy.
