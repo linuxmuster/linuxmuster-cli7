@@ -1,3 +1,9 @@
+linuxmuster-cli7 (7.2.8) lmn72; urgency=medium
+
+  * [samba] Last login command 
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Thu, 18 Jul 2024 16:13:18 +0200
+
 linuxmuster-cli7 (7.2.7) lmn72; urgency=medium
 
   * [samba] Avoid samba library conflict 
