@@ -128,9 +128,7 @@ def lastlogin(pattern: Annotated[str, typer.Argument()] = None):
     logins.add_column("IP", style="cyan")
     logins.add_column("Date", style="bright_magenta")
 
-    last_logins = last_login(pattern)
-
-    for entry in sorted(last_logins, key=lambda d: d["datetime"], reverse=True):
+    for entry in last_login(pattern):
         logins.add_row(entry['user'], entry['ip'], str(entry['datetime']))
     console.print(logins)
 
