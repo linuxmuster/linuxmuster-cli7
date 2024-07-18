@@ -4,6 +4,7 @@ from typing_extensions import Annotated
 from rich.console import Console
 from rich.table import Table
 from linuxmusterTools.samba_util import GPOManager, smbstatus, SambaToolDNS
+from linuxmusterTools.samba_util.log import last_login
 
 
 gpomgr = GPOManager()
@@ -119,3 +120,17 @@ def dns(
 
     if sub or not root:
         console.print(dns_table)
+
+@app.command(help="Get the last login of an user or on a computer")
+def lastlogin(pattern: Annotated[str, typer.Argument()] = None):
+    logins = Table()
+    logins.add_column("User", style="green")
+    logins.add_column("IP", style="cyan")
+    logins.add_column("Date", style="bright_magenta")
+
+    last_logins = last_login(pattern)
+
+    for entry in sorted(last_logins, key=lambda d: d["datetime"], reverse=True):
+        logins.add_row(entry['user'], entry['ip'], str(entry['datetime']))
+    console.print(logins)
+
