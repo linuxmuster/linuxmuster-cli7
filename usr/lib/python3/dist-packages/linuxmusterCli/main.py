@@ -1,12 +1,43 @@
 #!/usr/bin/env python3
 
+import sys
 import typer
 import subprocess
+import logging
+import logging.handlers
+from termcolor import colored
 
 from rich.console import Console
 from rich.table import Table
 from typers import samba, linbo, devices, users, up, user
 
+
+class CLILogHandler(logging.StreamHandler):
+    def __init__(self, stream):
+        logging.StreamHandler.__init__(self, stream)
+
+    def handle(self, record):
+
+        msg = record.msg % record.args
+
+        if record.levelname == 'DEBUG':
+            s = colored(f'DEBUG:  {msg}\n', 'white')
+        if record.levelname == 'INFO':
+            s = colored(f'INFO:  {msg}\n', 'green', attrs=['bold'])
+        if record.levelname == 'WARNING':
+            s = colored(f'WARNING:  {msg}\n', 'yellow', attrs=['bold'])
+        if record.levelname == 'ERROR':
+            s = colored(f'ERROR !  {msg}\n', 'red', attrs=['bold'])
+
+        s += "\n"
+
+        self.stream.write(s)
+
+log = logging.getLogger()
+log.setLevel(logging.INFO)
+stdout = CLILogHandler(sys.stdout)
+stdout.setLevel(logging.INFO)
+log.handlers = [stdout]
 
 console = Console()
 app = typer.Typer()
