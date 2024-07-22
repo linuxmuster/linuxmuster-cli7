@@ -1,4 +1,4 @@
-linuxmuster-cli7 (7.2.9) lmn72; urgency=medium
+linuxmuster-cli7 (7.2.10) lmn72; urgency=medium
 
   * Nice error messages
   * [samba] Option -a to parse gz logs too
