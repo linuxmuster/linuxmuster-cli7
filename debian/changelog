@@ -1,3 +1,9 @@
+linuxmuster-cli7 (7.2.11) lmn72; urgency=medium
+
+  * Update debian version 
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Mon, 22 Jul 2024 18:29:50 +0200
+
 linuxmuster-cli7 (7.2.10) lmn72; urgency=medium
 
   * Nice error messages
