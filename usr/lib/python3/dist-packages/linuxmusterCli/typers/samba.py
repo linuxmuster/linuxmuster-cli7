@@ -122,13 +122,16 @@ def dns(
         console.print(dns_table)
 
 @app.command(help="Get the last login of an user or on a computer")
-def lastlogin(pattern: Annotated[str, typer.Argument()] = None):
+def lastlogin(
+        pattern: Annotated[str, typer.Argument()] = None,
+        all_logs: Annotated[bool, typer.Option("--all", "-a")] = False
+    ):
     logins = Table()
     logins.add_column("User", style="green")
     logins.add_column("IP", style="cyan")
     logins.add_column("Date", style="bright_magenta")
 
-    for entry in last_login(pattern):
+    for entry in last_login(pattern, include_gz=all_logs):
         logins.add_row(entry['user'], entry['ip'], str(entry['datetime']))
     console.print(logins)
 
