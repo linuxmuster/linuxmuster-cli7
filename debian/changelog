@@ -1,3 +1,10 @@
+linuxmuster-cli7 (7.2.9) lmn72; urgency=medium
+
+  * Nice error messages
+  * [samba] Option -a to parse gz logs too
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Mon, 22 Jul 2024 18:26:48 +0200
+
 linuxmuster-cli7 (7.2.8) lmn72; urgency=medium
 
   * [samba] Last login command 
