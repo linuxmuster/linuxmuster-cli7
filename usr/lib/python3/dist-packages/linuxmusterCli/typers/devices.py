@@ -49,5 +49,5 @@ def ls(
                 devices.add_row(device['room'], device['hostname'], device['group'], device['ip'], device['mac'], "Registered")
                 break
         else:
-            devices.add_row(device['room'], device['hostname'], device['ip'], device['mac'], "Not registered")
+            devices.add_row(device['room'], device['hostname'], device['group'], device['ip'], device['mac'], "Not registered")
     console.print(devices)
