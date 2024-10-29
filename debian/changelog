@@ -1,3 +1,9 @@
+linuxmuster-cli7 (7.2.12) lmn72; urgency=medium
+
+  * Fix empty group by devices (thanks @fhreichert) 
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Tue, 29 Oct 2024 10:34:27 +0100
+
 linuxmuster-cli7 (7.2.11) lmn72; urgency=medium
 
   * Update debian version 
