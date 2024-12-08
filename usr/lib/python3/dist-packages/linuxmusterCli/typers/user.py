@@ -1,6 +1,7 @@
 import typer
 from typing_extensions import Annotated
 from math import ceil
+from datetime import datetime
 from rich import print, box
 from rich.layout import Layout
 from rich.table import Table
@@ -12,7 +13,16 @@ from linuxmusterTools.ldapconnector import LMNLdapReader as lr
 console = Console(emoji=False)
 app = typer.Typer()
 
-def outformat(value):
+def convert_sophomorix_time(t):
+    try:
+        return  datetime.strptime(t, '%Y%m%d%H%M%S.%fZ').strftime("%d %b %Y %H:%M:%S")
+    except Exception:
+        return t
+
+def outformat(value, fieldname=""):
+    if "Date" in fieldname:
+        return convert_sophomorix_time(value)
+
     if isinstance(value, list):
         return ','.join(value)
     if str(value) == 'True':
@@ -84,7 +94,12 @@ def ls(
         for index in range(half):
             field1 = samba[index]
             field2 = samba[index + half] if index+half < len(samba) else None
-            output['Samba'].add_row(field1, outformat(users_data[field1]), field2, outformat(users_data.get(field2, '')))
+            output['Samba'].add_row(
+                field1,
+                outformat(users_data.get(field1,''), fieldname=field1),
+                field2,
+                outformat(users_data.get(field2, ''), fieldname=field2)
+            )
 
         layout = Layout()
         layout.split_column(
