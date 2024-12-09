@@ -30,12 +30,17 @@ def check(
     commands = ""
     cmd_count = 0
     to_delete = []
-    for user,killdate in result.items():
-        if killdate is not None:
-            to_delete.append(f"{attic_dir}/{user}")
-            commands += f"\trm -rf {attic_dir}/{user}\n"
-            status = f"Account killed at {killdate}"
-            cmd_count += 1
+    for user,details in result.items():
+        if details['start']:
+            if details['status'] == "killed":
+                to_delete.append(f"{attic_dir}/{user}")
+                commands += f"\trm -rf {attic_dir}/{user}\n"
+                status = f"Account killed at {details['end']}"
+                cmd_count += 1
+            elif details['status'] != 'killable':
+                status = f"Account {details['status']} from {details['start']} to {details['end']}"
+            else:
+                status = f"Account {details['status']} since {details['start']}"
         else:
             status = "No information found"
 
