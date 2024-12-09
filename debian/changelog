@@ -1,3 +1,9 @@
+linuxmuster-cli7 (7.2.13) lmn72; urgency=medium
+
+  * Add check_attic command
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Mon, 09 Dec 2024 16:53:59 +0100
+
 linuxmuster-cli7 (7.2.12) lmn72; urgency=medium
 
   * Fix empty group by devices (thanks @fhreichert) 
