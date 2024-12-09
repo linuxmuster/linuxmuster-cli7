@@ -9,7 +9,7 @@ from termcolor import colored
 
 from rich.console import Console
 from rich.table import Table
-from typers import samba, linbo, devices, users, up, user
+from typers import samba, linbo, devices, users, up, user, check_attic
 
 
 class CLILogHandler(logging.StreamHandler):
@@ -47,6 +47,7 @@ app.add_typer(devices.app, name='devices')
 app.add_typer(users.app, name='users')
 app.add_typer(user.app, name='user')
 app.add_typer(up.app, name='up')
+app.add_typer(check_attic.app, name='check_attic')
 
 @app.command(help="Lists linuxmuster.net packages installed.")
 def version():

@@ -4,3 +4,4 @@ from .users import *
 from .user import *
 from .devices import *
 from .up import *
+from .check_attic import *
