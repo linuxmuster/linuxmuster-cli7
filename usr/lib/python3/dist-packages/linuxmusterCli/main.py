@@ -40,7 +40,7 @@ stdout.setLevel(logging.INFO)
 log.handlers = [stdout]
 
 console = Console()
-app = typer.Typer()
+app = typer.Typer(no_args_is_help=True)
 app.add_typer(samba.app, name='samba')
 app.add_typer(linbo.app, name='linbo')
 app.add_typer(devices.app, name='devices')
