@@ -42,12 +42,13 @@ def ls(
     devices.add_column("Group", style="green")
     devices.add_column("IP", style="yellow")
     devices.add_column("Mac", style="bright_magenta")
+    devices.add_column("Role", style="bright_magenta")
     devices.add_column("LDAP", style="bright_magenta")
     for device in devices_data:
         for ldap_device in ldap_data:
             if device['hostname'].lower() == ldap_device['cn'].lower() and device['mac'].lower() == ldap_device['sophomorixComputerMAC'].lower():
-                devices.add_row(device['room'], device['hostname'], device['group'], device['ip'], device['mac'], "Registered")
+                devices.add_row(device['room'], device['hostname'], device['group'], device['ip'], device['mac'], device['sophomorixRole'], "Registered")
                 break
         else:
-            devices.add_row(device['room'], device['hostname'], device['group'], device['ip'], device['mac'], "Not registered")
+            devices.add_row(device['room'], device['hostname'], device['group'], device['ip'], device['mac'], device['sophomorixRole'], "Not registered")
     console.print(devices)
