@@ -30,7 +30,11 @@ def ls(
         devices_data = sorted(devices_data, key=lambda d: (d['room'], d['hostname']))
 
     devices_data = list(filter(
-        lambda d: filter_str in d['hostname'].lower() or filter_str in d['mac'].lower() or filter_str in d['room'].lower(), 
+        lambda d: \
+            filter_str in d['hostname'].lower() \
+            or filter_str in d['mac'].lower() \
+            or filter_str in d['room'].lower()\
+            or filter_str in d['ip'],
         devices_data
     ))
 
