@@ -5,6 +5,8 @@ from rich.console import Console
 from rich.table import Table
 from linuxmusterTools.samba_util import GPOManager, smbstatus, SambaToolDNS
 from linuxmusterTools.samba_util.log import last_login
+from .state import state
+from .format import printf
 
 
 gpomgr = GPOManager()
@@ -22,9 +24,15 @@ def gpos():
     gpos.add_column("GPO", style="cyan")
     gpos.add_column("Path", style="bright_magenta")
 
+    data = []
     for name, details in GPOS.items():
         gpos.add_row(name, details.gpo, details.path)
-    console.print(gpos)
+        data.append([name, details.gpo, details.path])
+
+    if state.format:
+        printf.format(data)
+    else:
+        console.print(gpos)
 
 @app.command(help="Display all configured drives in linuxmuster.net for the specified school.")
 def drives(school: Annotated[str, typer.Option("--school", "-s")] = 'default-school'):
@@ -37,6 +45,7 @@ def drives(school: Annotated[str, typer.Option("--school", "-s")] = 'default-sch
     # drives.add_column("Visible teachers", style="bright_magenta")
     # drives.add_column("Visible students", style="bright_magenta")
 
+    data = []
     for drive in GPOS[f"sophomorix:school:{school}"].drivemgr.drives:
         drives.add_row(
                 drive.id, 
@@ -47,7 +56,20 @@ def drives(school: Annotated[str, typer.Option("--school", "-s")] = 'default-sch
                 # str(drive.visible('teachers')),
                 # str(drive.visible('students'))
         )
-    console.print(drives)
+        data.append([
+            drive.id,
+            drive.letter,
+            str(drive.userLetter),
+            drive.label,
+            str(drive.disabled),]
+            # str(drive.visible('teachers')),
+            # str(drive.visible('students'))
+        )
+
+    if state.format:
+        printf.format(data)
+    else:
+        console.print(drives)
 
 @app.command(help="Display all current samba connections.")
 def status(
@@ -66,14 +88,23 @@ def status(
         users_connections.add_column("IP", style="yellow")
         users_connections.add_column("Hostname", style="cyan")
 
+        data = []
         for user,details in conn.users.items():
             users_connections.add_row(
                     user,
                     details.machine,
                     details.hostname,
             )
+            data.append([
+                user,
+                details.machine,
+                details.hostname,
+            ])
 
-        console.print(users_connections)
+        if state.format:
+            printf.format(data)
+        else:
+            console.print(users_connections)
 
     if show_all or machines:
         machines_connections = Table()
@@ -81,13 +112,21 @@ def status(
         machines_connections.add_column("IP", style="cyan")
 
         conn.get_machines()
+        data = []
         for machine, details in conn.machines.items():
             machines_connections.add_row(
                     machine,
                     details.machine,
             )
+            data.append([
+                machine,
+                details.machine,
+            ])
 
-        console.print(machines_connections)
+        if state.format:
+            printf.format(data)
+        else:
+            console.print(machines_connections)
 
 
 @app.command(help="Display all current DNS enries.")
@@ -109,17 +148,27 @@ def dns(
     dns_table.add_column("TTL", style="yellow")
     dns_table.add_column("Value", style="cyan")
 
+    root_data = []
     for entry in DNS['root']:
         root_table.add_row(entry['type'], entry['ttl'], entry['value'])
+        root_data.append([entry['type'], entry['ttl'], entry['value']])
 
+    dns_data = []
     for entry in DNS['sub']:
         dns_table.add_row(entry['host'], entry['type'], entry['ttl'], entry['value'])
+        dns_data.append([entry['host'], entry['type'], entry['ttl'], entry['value']])
 
     if root or not sub:
-        console.print(root_table)
+        if state.format:
+            printf.format(root_data)
+        else:
+            console.print(root_table)
 
     if sub or not root:
-        console.print(dns_table)
+        if state.format:
+            printf.format(dns_data)
+        else:
+            console.print(dns_table)
 
 @app.command(help="Get the last login of an user or on a computer")
 def lastlogin(
@@ -131,7 +180,13 @@ def lastlogin(
     logins.add_column("IP", style="cyan")
     logins.add_column("Date", style="bright_magenta")
 
+    data = []
     for entry in last_login(pattern, include_gz=all_logs):
         logins.add_row(entry['user'], entry['ip'], str(entry['datetime']))
-    console.print(logins)
+        data.append([entry['user'], entry['ip'], str(entry['datetime'])])
+
+    if state.format:
+        printf.format(data)
+    else:
+        console.print(logins)
 
