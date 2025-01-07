@@ -4,6 +4,8 @@ from typing_extensions import Annotated
 from rich.console import Console
 from rich.table import Table
 from linuxmusterTools.devices import UPChecker
+from .state import state
+from .format import printf
 
 
 console = Console(emoji=False)
@@ -29,16 +31,23 @@ def check_online(
     table_results.add_column("IP", style="yellow")
     table_results.add_column("Status")
 
+    data = []
     for ip, status in results.items():
-        if status in ["Off", "No response"]:
-            table_results.add_row(ip, f"[red]{status}")
-        elif status == "Linbo":
-            table_results.add_row(ip, f"[cyan]{status}")
-        elif status == "OS Linux":
-            table_results.add_row(ip, f"[green]{status}")
-        elif status == "OS Windows":
-            table_results.add_row(ip, f"[bright_magenta]{status}")
-        elif status == "OS Unknown":
-            table_results.add_row(ip, f"[bright_black]{status}")
+        if state.format:
+            data.append([ip, status])
+        else:
+            if status in ["Off", "No response"]:
+                table_results.add_row(ip, f"[red]{status}")
+            elif status == "Linbo":
+                table_results.add_row(ip, f"[cyan]{status}")
+            elif status == "OS Linux":
+                table_results.add_row(ip, f"[green]{status}")
+            elif status == "OS Windows":
+                table_results.add_row(ip, f"[bright_magenta]{status}")
+            elif status == "OS Unknown":
+                table_results.add_row(ip, f"[bright_black]{status}")
 
-    console.print(table_results)
+    if not state.format:
+        console.print(table_results)
+    else:
+        printf.format(data)
