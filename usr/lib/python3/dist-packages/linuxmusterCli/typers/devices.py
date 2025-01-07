@@ -5,6 +5,8 @@ from rich.console import Console
 from rich.table import Table
 from linuxmusterTools.lmnfile import LMNFile
 from linuxmusterTools.ldapconnector import LMNLdapReader as lr
+from .state import state
+from .format import printf
 
 
 console = Console(emoji=False)
@@ -48,11 +50,20 @@ def ls(
     devices.add_column("Mac", style="bright_magenta")
     devices.add_column("Role", style="bright_magenta")
     devices.add_column("LDAP", style="bright_magenta")
+
+    output = []
+
     for device in devices_data:
         for ldap_device in ldap_data:
             if device['hostname'].lower() == ldap_device['cn'].lower() and device['mac'].lower() == ldap_device['sophomorixComputerMAC'].lower():
                 devices.add_row(device['room'], device['hostname'], device['group'], device['ip'], device['mac'], device['sophomorixRole'], "Registered")
+                output.append([device['room'], device['hostname'], device['group'], device['ip'], device['mac'], device['sophomorixRole'], "Registered"])
                 break
         else:
             devices.add_row(device['room'], device['hostname'], device['group'], device['ip'], device['mac'], device['sophomorixRole'], "Not registered")
-    console.print(devices)
+            output.append([device['room'], device['hostname'], device['group'], device['ip'], device['mac'], device['sophomorixRole'], "Not registered"])
+
+    if state.format:
+        printf.format(output)
+    else:
+        console.print(devices)
