@@ -172,7 +172,7 @@ def dns(
 
 @app.command(help="Get the last login of an user or on a computer")
 def lastlogin(
-        pattern: Annotated[str, typer.Argument()] = None,
+        pattern: Annotated[str, typer.Argument()] = '',
         all_logs: Annotated[bool, typer.Option("--all", "-a")] = False
     ):
     logins = Table()
