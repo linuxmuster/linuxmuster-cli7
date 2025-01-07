@@ -7,6 +7,8 @@ from rich.console import Console
 from rich.table import Table
 from linuxmusterTools.lmnfile import LMNFile
 from linuxmusterTools.linbo import LinboImageManager, list_workstations, last_sync_all
+from .state import state
+from .format import printf
 
 
 LINBO_PATH = '/srv/linbo'
@@ -27,6 +29,7 @@ def groups(school: Annotated[str, typer.Option("--school", "-s")] = 'default-sch
     with LMNFile(f'/etc/linuxmuster/sophomorix/{school}/{prefix}devices.csv', 'r') as f:
         devices = f.read()
 
+    data = []
     for file in os.listdir(LINBO_PATH):
         path = os.path.join(LINBO_PATH, file)
         if (
@@ -41,7 +44,12 @@ def groups(school: Annotated[str, typer.Option("--school", "-s")] = 'default-sch
                 if device['group'] == group:
                     devices_count += 1
             groups.add_row(group, str(devices_count))
-    console.print(groups)
+            data.append([group, str(devices_count)])
+
+    if state.format:
+        printf.format(data)
+    else:
+        console.print(groups)
 
 @app.command(help="Display all available linbo images.")
 def images():
@@ -51,7 +59,8 @@ def images():
     images.add_column("Backups", style="bright_magenta")
     images.add_column("Differential image", style="cyan")
     # images.add_column("Used in groups", style="cyan")
-    
+
+    data = []
     for name,group in lim.groups.items():
         size = str(round(group.base.size / 1024 / 1024))
         diff = "No"
@@ -59,8 +68,12 @@ def images():
             diff_size = round(group.diff_image.size / 1024 / 1024)
             diff = f"Yes ({diff_size} MiB)"
         images.add_row(name, size, '\n'.join(group.backups.keys()), diff)
+        data.append([name, size, ','.join(group.backups.keys()), diff])
 
-    console.print(images)
+    if state.format:
+        printf.format(data)
+    else:
+        console.print(images)
 
 @app.command(help="Display last synchronisation date for all devices or the selected group.")
 def lastsync(
@@ -101,8 +114,10 @@ def lastsync(
         sync = Table()
         sync.add_column('Hostname', style="cyan")
         sync.add_column('IP', style="cyan")
+        data = [['Hostname', 'IP']]
         for image in images:
             sync.add_column(f'Last synchronisation for {image}')
+            data[0].append(f'Last synchronisation for {image}')
 
         for host in hosts['hosts']:
             sync.add_row(
@@ -110,6 +125,16 @@ def lastsync(
                 host['ip'],
                 *[format(host['sync'][image]) for image in images]
             )
-        console.print(sync)
+            data.append([
+                host['hostname'],
+                host['ip'],
+                *[host['sync'][image] for image in images]
+            ])
+
+        if state.format:
+            printf.format(data)
+            print()
+        else:
+            console.print(sync)
 
 
