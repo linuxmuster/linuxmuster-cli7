@@ -1,10 +1,11 @@
-import os
 import typer
 from typing_extensions import Annotated
 
 from rich.console import Console
 from rich.table import Table
 from linuxmusterTools.ldapconnector import LMNLdapReader as lr
+from .state import state
+from .format import printf
 
 
 console = Console(emoji=False)
@@ -61,7 +62,14 @@ def ls(
     users.add_column("Adminclass", style="bright_magenta")
     users.add_column("Role", style="bright_magenta")
     users.add_column("Status", style="yellow")
+
+    data = []
     for user in users_data:
+        data.append([user['sn'], user['givenName'], user['sAMAccountName'], user['sophomorixAdminClass'], user['sophomorixRole'], user['sophomorixStatus']])
         users.add_row(user['sn'], user['givenName'], user['sAMAccountName'], user['sophomorixAdminClass'], user['sophomorixRole'], user['sophomorixStatus'])
-    console.print(users)
+
+    if state.format:
+        printf.format(data)
+    else:
+        console.print(users)
 
