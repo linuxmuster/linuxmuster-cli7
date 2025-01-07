@@ -8,6 +8,8 @@ from rich.table import Table
 from rich.console import Console
 from rich.pretty import pprint
 from linuxmusterTools.ldapconnector import LMNLdapReader as lr
+from .state import state
+from .format import *
 
 
 console = Console(emoji=False)
@@ -68,6 +70,13 @@ def ls(
 
         console.print(f"User {user} not found.")
         return
+
+    if state.raw:
+        pprint(users_data)
+        return
+
+    if state.csv:
+        warn("The option --csv is not available with this command.")
 
     if not full:
         samba = ['sAMAccountType', 'sophomorixAdminFile', 'sophomorixComment', 'sophomorixCreationDate', 'sophomorixDeactivationDate', 'sophomorixExamMode', 'sophomorixExitAdminClass', 'sophomorixFirstnameASCII', 'sophomorixFirstnameInitial', 'sophomorixFirstPassword', 'sophomorixIntrinsic2', 'sophomorixSchoolname', 'sophomorixSchoolPrefix', 'sophomorixStatus', 'sophomorixSurnameASCII', 'sophomorixSurnameInitial', 'sophomorixTolerationDate', 'sophomorixUnid', 'sophomorixUserToken', 'sophomorixWebuiDashboard', 'unixHomeDirectory', 'homeDrive', ]
