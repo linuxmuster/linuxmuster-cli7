@@ -11,6 +11,7 @@ from rich.console import Console
 from rich.table import Table
 from typers import samba, linbo, devices, users, up, user, check_attic
 from typers import state
+from typers.format import *
 
 
 class CLILogHandler(logging.StreamHandler):
@@ -51,11 +52,19 @@ app.add_typer(up.app, name='up')
 app.add_typer(check_attic.app, name='check_attic')
 
 @app.callback()
-def output(raw: bool = False, json: bool = False):
+def output(raw: bool = False, csv: bool = False):
+    if raw + csv == 0:
+        return
+    elif raw + csv > 1:
+        error("You can not combine the options --raw, --json and --csv !")
+        raise typer.Exit()
+
+    state.format = True
+
     if raw:
         state.raw = True
-    # if json:
-    #     state.json = True
+    if csv:
+        state.csv = True
 
 @app.command(help="Lists linuxmuster.net packages installed.")
 def version():
