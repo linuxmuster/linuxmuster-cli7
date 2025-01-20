@@ -1,3 +1,15 @@
+linuxmuster-cli7 (7.2.14) lmn72; urgency=medium
+
+  * Remove completion
+  * Add global CSV and RAW output formats
+  * Add -h shortcut for help
+  * Fix log level for linuxmusterTools  
+  * [devices] Filter by IP too
+  * [devices] Add sophomorixRole
+  * [samba] Fix search pattern 
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Mon, 20 Jan 2025 12:31:57 +0100
+
 linuxmuster-cli7 (7.2.13) lmn72; urgency=medium
 
   * Add check_attic command
