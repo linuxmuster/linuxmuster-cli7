@@ -63,7 +63,7 @@ def ls(
     users.add_column("Role", style="bright_magenta")
     users.add_column("Status", style="yellow")
 
-    data = []
+    data = [[c.header for c in users.columns]]
     for user in users_data:
         data.append([user['sn'], user['givenName'], user['sAMAccountName'], user['sophomorixAdminClass'], user['sophomorixRole'], user['sophomorixStatus']])
         users.add_row(user['sn'], user['givenName'], user['sAMAccountName'], user['sophomorixAdminClass'], user['sophomorixRole'], user['sophomorixStatus'])

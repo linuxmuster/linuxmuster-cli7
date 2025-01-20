@@ -31,7 +31,7 @@ def check_online(
     table_results.add_column("IP", style="yellow")
     table_results.add_column("Status")
 
-    data = []
+    data = [[c.header for c in table_results.columns]]
     for ip, status in results.items():
         if state.format:
             data.append([ip, status])

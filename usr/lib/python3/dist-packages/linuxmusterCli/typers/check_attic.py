@@ -33,7 +33,7 @@ def check(
     cmd_count = 0
     to_delete = []
 
-    data = []
+    data = [[c.header for c in attic.columns]]
     for user,details in result.items():
         if details['start']:
             if details['status'] == "killed":

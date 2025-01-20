@@ -51,7 +51,7 @@ def ls(
     devices.add_column("Role", style="bright_magenta")
     devices.add_column("LDAP", style="bright_magenta")
 
-    output = []
+    output = [[c.header for c in devices.columns]]
 
     for device in devices_data:
         for ldap_device in ldap_data:

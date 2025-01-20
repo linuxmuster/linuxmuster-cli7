@@ -22,7 +22,7 @@ def gpos():
     gpos.add_column("GPO", style="cyan")
     gpos.add_column("Path", style="bright_magenta")
 
-    data = []
+    data = [[c.header for c in gpos.columns]]
     for name, details in GPOS.items():
         gpos.add_row(name, details.gpo, details.path)
         data.append([name, details.gpo, details.path])
@@ -43,7 +43,7 @@ def drives(school: Annotated[str, typer.Option("--school", "-s")] = 'default-sch
     # drives.add_column("Visible teachers", style="bright_magenta")
     # drives.add_column("Visible students", style="bright_magenta")
 
-    data = []
+    data = [[c.header for c in drives.columns]]
     for drive in GPOS[f"sophomorix:school:{school}"].drivemgr.drives:
         drives.add_row(
                 drive.id, 
@@ -86,7 +86,7 @@ def status(
         users_connections.add_column("IP", style="yellow")
         users_connections.add_column("Hostname", style="cyan")
 
-        data = []
+        data = [[c.header for c in users_connections.columns]]
         for user,details in conn.users.items():
             users_connections.add_row(
                     user,
@@ -110,7 +110,7 @@ def status(
         machines_connections.add_column("IP", style="cyan")
 
         conn.get_machines()
-        data = []
+        data = [[c.header for c in machines_connections.columns]]
         for machine, details in conn.machines.items():
             machines_connections.add_row(
                     machine,
@@ -146,12 +146,12 @@ def dns(
     dns_table.add_column("TTL", style="yellow")
     dns_table.add_column("Value", style="cyan")
 
-    root_data = []
+    root_data = [[c.header for c in root_table.columns]]
     for entry in DNS['root']:
         root_table.add_row(entry['type'], entry['ttl'], entry['value'])
         root_data.append([entry['type'], entry['ttl'], entry['value']])
 
-    dns_data = []
+    dns_data = [[c.header for c in dns_table.columns]]
     for entry in DNS['sub']:
         dns_table.add_row(entry['host'], entry['type'], entry['ttl'], entry['value'])
         dns_data.append([entry['host'], entry['type'], entry['ttl'], entry['value']])
@@ -178,7 +178,7 @@ def lastlogin(
     logins.add_column("IP", style="cyan")
     logins.add_column("Date", style="bright_magenta")
 
-    data = []
+    data = [[c.header for c in logins.columns]]
     for entry in last_login(pattern, include_gz=all_logs):
         logins.add_row(entry['user'], entry['ip'], str(entry['datetime']))
         data.append([entry['user'], entry['ip'], str(entry['datetime'])])

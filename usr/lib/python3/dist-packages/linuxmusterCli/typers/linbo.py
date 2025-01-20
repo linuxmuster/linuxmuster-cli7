@@ -28,7 +28,7 @@ def groups(school: Annotated[str, typer.Option("--school", "-s")] = 'default-sch
     with LMNFile(f'/etc/linuxmuster/sophomorix/{school}/{prefix}devices.csv', 'r') as f:
         devices = f.read()
 
-    data = []
+    data = [[c.header for c in groups.columns]]
     for file in os.listdir(LINBO_PATH):
         path = os.path.join(LINBO_PATH, file)
         if (
@@ -59,7 +59,7 @@ def images():
     images.add_column("Differential image", style="cyan")
     # images.add_column("Used in groups", style="cyan")
 
-    data = []
+    data = [[c.header for c in images.columns]]
     lim = LinboImageManager()
     for name,group in lim.groups.items():
         size = str(round(group.base.size / 1024 / 1024))
@@ -114,7 +114,7 @@ def lastsync(
         sync = Table()
         sync.add_column('Hostname', style="cyan")
         sync.add_column('IP', style="cyan")
-        data = [['Hostname', 'IP']]
+        data = [[c.header for c in sync.columns]]
         for image in images:
             sync.add_column(f'Last synchronisation for {image}')
             data[0].append(f'Last synchronisation for {image}')
