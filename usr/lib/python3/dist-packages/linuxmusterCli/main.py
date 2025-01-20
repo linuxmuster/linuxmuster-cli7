@@ -35,6 +35,11 @@ class CLILogHandler(logging.StreamHandler):
 
         self.stream.write(s)
 
+# Reduce log level for linuxmusterTools
+for name, logger in logging.root.manager.loggerDict.items():
+    if 'linuxmusterTools' in name:
+        logging.getLogger(name).setLevel(logging.WARNING)
+
 log = logging.getLogger()
 log.setLevel(logging.INFO)
 stdout = CLILogHandler(sys.stdout)
