@@ -11,6 +11,7 @@ from rich.console import Console
 from rich.table import Table
 from typers import samba, linbo, devices, users, up, user, check_attic
 from typers.format import *
+from typing_extensions import Annotated
 
 
 class CLILogHandler(logging.StreamHandler):
@@ -56,7 +57,9 @@ app.add_typer(up.app, name='up')
 app.add_typer(check_attic.app, name='check_attic')
 
 @app.callback()
-def output(raw: bool = False, csv: bool = False):
+def output(
+        raw: Annotated[bool, typer.Option(help="Print the values without color and tab separated on the output.")] = False,
+        csv: Annotated[bool, typer.Option(help="Print the values without color and separated by semicolon on the output.")] = False):
     if raw + csv == 0:
         return
     elif raw + csv > 1:
