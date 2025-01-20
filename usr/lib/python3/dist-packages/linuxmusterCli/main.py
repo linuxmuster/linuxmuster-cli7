@@ -10,7 +10,6 @@ from termcolor import colored
 from rich.console import Console
 from rich.table import Table
 from typers import samba, linbo, devices, users, up, user, check_attic
-from typers import state
 from typers.format import *
 
 
@@ -47,7 +46,7 @@ stdout.setLevel(logging.INFO)
 log.handlers = [stdout]
 
 console = Console()
-app = typer.Typer(no_args_is_help=True)
+app = typer.Typer(no_args_is_help=True, add_completion=False)
 app.add_typer(samba.app, name='samba')
 app.add_typer(linbo.app, name='linbo')
 app.add_typer(devices.app, name='devices')
