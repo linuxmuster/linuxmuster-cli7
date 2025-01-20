@@ -14,7 +14,6 @@ from .format import printf
 LINBO_PATH = '/srv/linbo'
 console = Console(emoji=False)
 app = typer.Typer(help="Manage linbo images and groups.")
-lim = LinboImageManager()
 
 @app.command(help="Display all available linbo groups.")
 def groups(school: Annotated[str, typer.Option("--school", "-s")] = 'default-school'):
@@ -61,6 +60,7 @@ def images():
     # images.add_column("Used in groups", style="cyan")
 
     data = []
+    lim = LinboImageManager()
     for name,group in lim.groups.items():
         size = str(round(group.base.size / 1024 / 1024))
         diff = "No"

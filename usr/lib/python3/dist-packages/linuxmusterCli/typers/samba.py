@@ -12,8 +12,6 @@ from .format import printf
 gpomgr = GPOManager()
 GPOS = gpomgr.gpos
 
-conn = smbstatus.SMBConnections()
-
 console = Console(emoji=False)
 app = typer.Typer(help="Manage samba shares and connections.")
 
