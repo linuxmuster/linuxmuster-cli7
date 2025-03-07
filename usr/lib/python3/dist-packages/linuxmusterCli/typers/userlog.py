@@ -7,7 +7,7 @@ from linuxmusterTools.ldapconnector import LMNLdapReader as lr
 from rich.console import Console
 from rich.table import Table
 from .state import state
-from .format import printf
+from .format import printf, error
 
 
 console = Console(emoji=False)
@@ -26,6 +26,10 @@ def ls(
         lastweek: Annotated[bool, typer.Option("--lastweek", "-lw")] = False,
         all: Annotated[bool, typer.Option("--all")] = False,
         ):
+
+    if (all and today) or (all and lastweek) or (today and lastweek):
+        error("Options --all, --today and ---lastweek are mutually exclusives! Please pick only one of them.")
+        raise typer.Exit()
 
     # No option chosen, showing all entries
     if not (show_added or show_updated or show_killed):
