@@ -18,13 +18,13 @@ app = typer.Typer()
     help="""Parse the userlogs of sophomorix and list the users added, killed or updated the last year."""
 )
 def ls(
-        school: Annotated[str, typer.Option("--school", "-s")] = 'default-school',
-        show_added: Annotated[bool, typer.Option("--added", "-a")] = False,
-        show_killed: Annotated[bool, typer.Option("--killed", "-k")] = False,
-        show_updated: Annotated[bool, typer.Option("--updated", "-u")] = False,
-        today: Annotated[bool, typer.Option("--today", "-t")] = False,
-        lastweek: Annotated[bool, typer.Option("--lastweek", "-lw")] = False,
-        all: Annotated[bool, typer.Option("--all")] = False,
+        school: Annotated[str, typer.Option("--school", "-s", help="Select the users from a specific school.")] = 'default-school',
+        show_added: Annotated[bool, typer.Option("--added", "-a", help="Show the users added")] = False,
+        show_killed: Annotated[bool, typer.Option("--killed", "-k", help="Show the users killed.")] = False,
+        show_updated: Annotated[bool, typer.Option("--updated", "-u", help="Show the users updated.")] = False,
+        today: Annotated[bool, typer.Option("--today", "-t", help="Only show the users changed today (can not be used combined with --all or --lastweek).")] = False,
+        lastweek: Annotated[bool, typer.Option("--lastweek", "-lw", help="Only show the users changed lastweek (can not be used combined with --all or --today).")] = False,
+        all: Annotated[bool, typer.Option("--all", help="Show all users changes logged (can not be used combined with --today or --lastweek).")] = False,
         ):
 
     if (all and today) or (all and lastweek) or (today and lastweek):
