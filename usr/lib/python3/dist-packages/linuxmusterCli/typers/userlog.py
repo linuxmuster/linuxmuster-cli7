@@ -22,6 +22,7 @@ def ls(
         show_added: Annotated[bool, typer.Option("--added", "-a")] = False,
         show_killed: Annotated[bool, typer.Option("--killed", "-k")] = False,
         show_updated: Annotated[bool, typer.Option("--updated", "-u")] = False,
+        today: Annotated[bool, typer.Option("--today", "-t")] = False,
         ):
 
     # No option chosen, showing all entries
@@ -31,13 +32,13 @@ def ls(
     userlog_data = {"added":{}, "updated":{}, "killed":{}}
 
     if show_added:
-        userlog_data["added"] = parse_add_log()
+        userlog_data["added"] = parse_add_log(today=today)
 
     if show_killed:
-        userlog_data["killed"] = parse_kill_log()
+        userlog_data["killed"] = parse_kill_log(today=today)
 
     if show_updated:
-        userlog_data["updated"] = parse_update_log()
+        userlog_data["updated"] = parse_update_log(today=today)
 
     userlog = Table(title=f"User log entries")
     userlog.add_column("Type", style="cyan")
