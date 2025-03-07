@@ -28,7 +28,7 @@ def ls(
         ):
 
     if (all and today) or (all and lastweek) or (today and lastweek):
-        error("Options --all, --today and ---lastweek are mutually exclusives! Please pick only one of them.")
+        error("Options --all, --today and --lastweek are mutually exclusives! Please pick only one of them.")
         raise typer.Exit()
 
     # No option chosen, showing all entries
