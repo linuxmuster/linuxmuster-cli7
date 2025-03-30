@@ -24,27 +24,52 @@ def ls(
         show_updated: Annotated[bool, typer.Option("--updated", "-u", help="Show the users updated.")] = False,
         today: Annotated[bool, typer.Option("--today", "-t", help="Only show the users changed today (can not be used combined with --all or --lastweek).")] = False,
         lastweek: Annotated[bool, typer.Option("--lastweek", "-lw", help="Only show the users changed lastweek (can not be used combined with --all or --today).")] = False,
+        last: Annotated[bool, typer.Option("--last", "-l", help="Only show the users changed at the last command (can only be used combined with -a or -k or -u).")] = False,
         all: Annotated[bool, typer.Option("--all", help="Show all users changes logged (can not be used combined with --today or --lastweek).")] = False,
         ):
 
-    if (all and today) or (all and lastweek) or (today and lastweek):
-        error("Options --all, --today and --lastweek are mutually exclusives! Please pick only one of them.")
+    if (all and today) or (all and lastweek) or (today and lastweek) or (last and (today or all or lastweek)):
+        error("Options --all, --last, --today and --lastweek are mutually exclusives! Please pick only one of them.")
         raise typer.Exit()
 
     # No option chosen, showing all entries
     if not (show_added or show_updated or show_killed):
         show_added, show_killed, show_updated = True, True, True
+        if last:
+            error("Option --last can only be used combined with -a or -k or -u ")
+            raise typer.Exit()
 
     userlog_data = {"added":{}, "updated":{}, "killed":{}}
 
     if show_added:
-        userlog_data["added"] = parse_add_log(all=all, today=today, lastweek=lastweek)
+        if last:
+            entries = parse_add_log(all=all, today=today, lastweek=lastweek)
+            timestamps = list(entries.keys())
+            timestamps.sort()
+            # Get only last timestamp entry
+            userlog_data["added"] = {timestamps[-1]: entries[timestamps[-1]]}
+        else:
+            userlog_data["added"] = parse_add_log(all=all, today=today, lastweek=lastweek)
 
     if show_killed:
-        userlog_data["killed"] = parse_kill_log(all=all, today=today, lastweek=lastweek)
+        if last:
+            entries = parse_kill_log(all=all, today=today, lastweek=lastweek)
+            timestamps = list(entries.keys())
+            timestamps.sort()
+            # Get only last timestamp entry
+            userlog_data["killed"] = {timestamps[-1]: entries[timestamps[-1]]}
+        else:
+            userlog_data["killed"] = parse_kill_log(all=all, today=today, lastweek=lastweek)
 
     if show_updated:
-        userlog_data["updated"] = parse_update_log(all=all, today=today, lastweek=lastweek)
+        if last:
+            entries = parse_update_log(all=all, today=today, lastweek=lastweek)
+            timestamps = list(entries.keys())
+            timestamps.sort()
+            # Get only last timestamp entry
+            userlog_data["updated"] = {timestamps[-1]: entries[timestamps[-1]]}
+        else:
+            userlog_data["updated"] = parse_update_log(all=all, today=today, lastweek=lastweek)
 
     userlog = Table(title=f"User log entries")
     userlog.add_column("Type", style="cyan")
@@ -58,27 +83,30 @@ def ls(
     userlog.add_column("Changes", style="yellow")
 
     data = [[c.header for c in userlog.columns]]
-    for i, (timestamp, entry) in enumerate(userlog_data["added"].items()):
+    for i, (timestamp, entries) in enumerate(userlog_data["added"].items()):
         date = str(datetime.fromtimestamp(timestamp))
-        data.append(["Added", entry['lastname'], entry['firstname'], entry['user'], entry['school'], entry['role'], entry['adminclass'], date, ""])
-        userlog.add_row("Added", entry['lastname'], entry['firstname'], entry['user'], entry['school'], entry['role'], entry['adminclass'], date, "", end_section=i==len(userlog_data["added"])-1)
+        for entry in entries:
+            data.append(["Added", entry['lastname'], entry['firstname'], entry['user'], entry['school'], entry['role'], entry['adminclass'], date, ""])
+            userlog.add_row("Added", entry['lastname'], entry['firstname'], entry['user'], entry['school'], entry['role'], entry['adminclass'], date, "", end_section=i==len(userlog_data["added"])-1)
 
-    for i, (timestamp, entry) in enumerate(userlog_data["killed"].items()):
+    for i, (timestamp, entries) in enumerate(userlog_data["killed"].items()):
         date = str(datetime.fromtimestamp(timestamp))
-        data.append(["Killed", entry['lastname'], entry['firstname'], entry['user'], entry['school'], entry['role'], entry['adminclass'], date, ""])
-        userlog.add_row("Killed", entry['lastname'], entry['firstname'], entry['user'], entry['school'], entry['role'], entry['adminclass'], date, "", end_section=i==len(userlog_data["killed"])-1)
+        for entry in entries:
+            data.append(["Killed", entry['lastname'], entry['firstname'], entry['user'], entry['school'], entry['role'], entry['adminclass'], date, ""])
+            userlog.add_row("Killed", entry['lastname'], entry['firstname'], entry['user'], entry['school'], entry['role'], entry['adminclass'], date, "", end_section=i==len(userlog_data["killed"])-1)
 
-    for timestamp, entry in userlog_data["updated"].items():
+    for timestamp, entries in userlog_data["updated"].items():
         date = str(datetime.fromtimestamp(timestamp))
-        user = lr.get(f'/users/{entry["user"]}')
+        for entry in entries:
+            user = lr.get(f'/users/{entry["user"]}')
 
-        # Avoid displaying changes by killed users
-        if user:
-            changes = "\n".join([f"{k}:{v}" for k,v in entry['changes'].items()])
-            changes_csv = ",".join([f"{k}:{v}" for k,v in entry['changes'].items()])
+            # Avoid displaying changes by killed users
+            if user:
+                changes = "\n".join([f"{k}:{v}" for k,v in entry['changes'].items()])
+                changes_csv = ",".join([f"{k}:{v}" for k,v in entry['changes'].items()])
 
-            data.append(["Updated", user['sn'], user['givenName'], entry['user'], user['school'], user['sophomorixRole'], user['sophomorixAdminClass'], date, changes_csv])
-            userlog.add_row("Updated", user['sn'], user['givenName'], entry['user'], user['school'], user['sophomorixRole'], user['sophomorixAdminClass'], date, changes, end_section=True)
+                data.append(["Updated", user['sn'], user['givenName'], entry['user'], user['school'], user['sophomorixRole'], user['sophomorixAdminClass'], date, changes_csv])
+                userlog.add_row("Updated", user['sn'], user['givenName'], entry['user'], user['school'], user['sophomorixRole'], user['sophomorixAdminClass'], date, changes, end_section=True)
 
     if state.format:
         printf.format(data)
