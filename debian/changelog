@@ -1,3 +1,9 @@
+linuxmuster-cli7 (7.3.3) lmn73; urgency=medium
+
+  * [userlog] Add userlog typer 
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Mon, 31 Mar 2025 21:59:14 +0200
+
 linuxmuster-cli7 (7.3.2) lmn73; urgency=medium
 
   * Update artifact to v4 
