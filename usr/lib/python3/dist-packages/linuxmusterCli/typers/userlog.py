@@ -25,6 +25,7 @@ def ls(
         today: Annotated[bool, typer.Option("--today", "-t", help="Only show the users changed today (can not be used combined with --all or --lastweek).")] = False,
         lastweek: Annotated[bool, typer.Option("--lastweek", "-lw", help="Only show the users changed lastweek (can not be used combined with --all or --today).")] = False,
         last: Annotated[bool, typer.Option("--last", "-l", help="Only show the users changed at the last command (can only be used combined with -a or -k or -u).")] = False,
+        list_changes: Annotated[bool, typer.Option("--list-changes", "-c", help="Get from the update log the list of changes attributes for each user. Disabled per default as it could take a lot of time.")] = False,
         all: Annotated[bool, typer.Option("--all", help="Show all users changes logged (can not be used combined with --today or --lastweek).")] = False,
         ):
 
@@ -63,13 +64,13 @@ def ls(
 
     if show_updated:
         if last:
-            entries = parse_update_log(all=all, today=today, lastweek=lastweek)
+            entries = parse_update_log(all=all, today=today, lastweek=lastweek, list_changes=list_changes)
             timestamps = list(entries.keys())
             timestamps.sort()
             # Get only last timestamp entry
             userlog_data["updated"] = {timestamps[-1]: entries[timestamps[-1]]}
         else:
-            userlog_data["updated"] = parse_update_log(all=all, today=today, lastweek=lastweek)
+            userlog_data["updated"] = parse_update_log(all=all, today=today, lastweek=lastweek, list_changes=list_changes)
 
     userlog = Table(title=f"User log entries")
     userlog.add_column("Type", style="cyan")
