@@ -5,5 +5,6 @@ from .user import *
 from .devices import *
 from .up import *
 from .check_attic import *
+from .check_parents import *
 from .userlog import *
 from .state import state
