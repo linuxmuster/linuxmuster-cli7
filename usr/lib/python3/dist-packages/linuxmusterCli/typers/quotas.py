@@ -19,21 +19,24 @@ app = typer.Typer()
 )
 def ls(
         #school: Annotated[str, typer.Option("--school", "-s", help="Select the users from a specific school.")] = 'default-school',
-        #schoolclass: Annotated[bool, typer.Option("--class", "-c", help="Only show the students of the specified schoolclass.")] = False,
+        schoolclass: Annotated[str, typer.Option("--class", "-c", help="Only show the students of the specified schoolclass.")] = False,
         teachers: Annotated[bool, typer.Option("--teachers", "-t", help="Only show the teachers.")] = False,
         #user: Annotated[bool, typer.Option("--user", "-u", help="Only show the specified.")] = False,
         ):
 
 
     # Seems to be a TODO
-    if False:
-        error("Options --all, --last, --today and --lastweek are mutually exclusives! Please pick only one of them.")
+    if schoolclass and teachers:
+        error("Options --schoolclass and --teachers are mutually exclusives! Please pick only one of them.")
         raise typer.Exit()
     school = 'default-school'
 
     if teachers:
         title_suffix = "of teachers"
         users = lr.getval('/roles/teacher', 'cn')
+    elif schoolclass:
+        title_suffix = f"of schoolclass {schoolclass}"
+        users = lr.getval(f'/schoolclasses/{schoolclass}', 'sophomorixMembers')
 
     quotas = Table(title=f"Quotas {title_suffix}")
     quotas.add_column("User", style="cyan")
