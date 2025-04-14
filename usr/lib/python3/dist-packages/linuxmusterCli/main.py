@@ -9,7 +9,18 @@ from termcolor import colored
 
 from rich.console import Console
 from rich.table import Table
-from typers import samba, linbo, devices, users, up, user, check_attic, userlog, check_parents
+from typers import (
+    samba,
+    linbo,
+    devices,
+    users,
+    up,
+    user,
+    check_attic,
+    userlog,
+    check_parents,
+    quotas,
+)
 from typers.format import *
 from typing_extensions import Annotated
 
@@ -57,6 +68,7 @@ app.add_typer(up.app, name='up')
 app.add_typer(check_attic.app, name='check_attic')
 app.add_typer(check_parents.app, name='check_parents')
 app.add_typer(userlog.app, name='userlog')
+app.add_typer(quotas.app, name='quotas')
 
 @app.callback()
 def output(
