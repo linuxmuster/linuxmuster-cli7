@@ -1,4 +1,5 @@
 import typer
+from concurrent import futures
 from typing_extensions import Annotated
 
 from linuxmusterTools.ldapconnector import LMNLdapReader as lr
@@ -34,7 +35,6 @@ def ls(
         title_suffix = "of teachers"
         users = lr.getval('/roles/teacher', 'cn')
 
-
     quotas = Table(title=f"Quotas {title_suffix}")
     quotas.add_column("User", style="cyan")
     quotas.add_column("Global", style="yellow")
@@ -44,11 +44,14 @@ def ls(
 
     data = [[c.header for c in quotas.columns]]
 
-    for user in users:
+    def add_quotas(user):
         user_quotas = get_user_quotas(user)
 
         data.append([user, user_quotas['linuxmuster-global']['used'], user_quotas[school]['used'], user_quotas['cloud'], user_quotas['mail']])
         quotas.add_row(user, str(user_quotas['linuxmuster-global']['used']), str(user_quotas[school]['used']), user_quotas['cloud'], user_quotas['mail'])
+
+    with futures.ThreadPoolExecutor() as executor:
+        infos = executor.map(add_quotas, users)
 
     if state.format:
         printf.format(data)
