@@ -4,7 +4,7 @@ from typing_extensions import Annotated
 from rich.console import Console
 from rich.table import Table
 
-from linuxmusterTools.ldapconnector import LMNUserWriter
+from linuxmusterTools.ldapconnector import LMNParent
 
 
 console = Console(emoji=False)
@@ -19,5 +19,14 @@ def check(
         ):
 
 
-    uw = LMNUserWriter()
-    uw.check_parents_groups()
+    pass
+
+    ### Must be updated with new Writer methods
+    #uw = LMNUser()
+    #report = uw.check_parents_groups()
+
+    #for student, parents_dn in report['move'].items():
+    #    print(student, parents_dn)
+
+    #for dn in report['delete']:
+    #    print(f"To delete: {dn}")
