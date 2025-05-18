@@ -1,3 +1,9 @@
+linuxmuster-cli7 (7.3.5) lmn73; urgency=medium
+
+  * Fix missing dependency. 
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Sun, 18 May 2025 20:59:32 +0200
+
 linuxmuster-cli7 (7.3.4) lmn73; urgency=medium
 
   * Fix pip install command
