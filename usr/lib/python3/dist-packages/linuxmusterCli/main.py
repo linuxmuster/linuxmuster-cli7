@@ -94,7 +94,7 @@ def version():
     packages.add_column("Packages", style="cyan")
     packages.add_column("Version", style="bright_magenta")
 
-    command = "dpkg -l | grep 'linuxmuster\|sophomorix'"
+    command = "dpkg -l | grep 'linuxmuster\\|sophomorix'"
     p = subprocess.Popen(command, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
     for package in p.stdout.readlines():
         details = package.decode().split()
