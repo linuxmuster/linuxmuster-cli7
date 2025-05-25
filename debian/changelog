@@ -1,3 +1,9 @@
+linuxmuster-cli7 (7.3.8) lmn73; urgency=medium
+
+  * Fix escape sequence. 
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Sun, 25 May 2025 13:34:57 +0200
+
 linuxmuster-cli7 (7.3.7) lmn73; urgency=medium
 
   * Fix shebang for venv. 
