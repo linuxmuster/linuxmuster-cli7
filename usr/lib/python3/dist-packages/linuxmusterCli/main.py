@@ -20,6 +20,7 @@ from typers import (
     userlog,
     check_parents,
     quotas,
+    student
 )
 from typers.format import *
 from typing_extensions import Annotated
@@ -69,6 +70,7 @@ app.add_typer(check_attic.app, name='check_attic')
 app.add_typer(check_parents.app, name='check_parents')
 app.add_typer(userlog.app, name='userlog')
 app.add_typer(quotas.app, name='quotas')
+app.add_typer(student.app, name='student')
 
 @app.callback()
 def output(
