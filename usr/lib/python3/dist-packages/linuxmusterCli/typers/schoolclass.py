@@ -79,5 +79,5 @@ def manage(
                     sys.exit(e)
 
     except Exception as e:
-        print(e)
+        print(str(e))
         sys.exit(1)
