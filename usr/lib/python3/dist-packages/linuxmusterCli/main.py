@@ -21,7 +21,8 @@ from typers import (
     check_parents,
     quotas,
     student,
-    schoolclass
+    schoolclass,
+    mgmtgroup,
 )
 from typers.format import *
 from typing_extensions import Annotated
@@ -73,6 +74,7 @@ app.add_typer(userlog.app, name='userlog')
 app.add_typer(quotas.app, name='quotas')
 app.add_typer(student.app, name='student')
 app.add_typer(schoolclass.app, name='schoolclass')
+app.add_typer(mgmtgroup.app, name='mgmtgroup')
 
 @app.callback()
 def output(
