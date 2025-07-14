@@ -1,3 +1,11 @@
+linuxmuster-cli7 (7.3.9) lmn73; urgency=medium
+
+  * Add schoolclass commands
+  * Add student commands
+  * Add mgmtgroup commands 
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Mon, 14 Jul 2025 21:05:33 +0200
+
 linuxmuster-cli7 (7.3.8) lmn73; urgency=medium
 
   * Fix escape sequence. 
