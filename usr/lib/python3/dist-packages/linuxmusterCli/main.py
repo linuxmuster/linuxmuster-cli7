@@ -19,6 +19,7 @@ from typers import (
     check_attic,
     userlog,
     check_parents,
+    check_smbclient,
     quotas,
     student,
     schoolclass,
@@ -57,7 +58,7 @@ for name, logger in logging.root.manager.loggerDict.items():
 log = logging.getLogger()
 log.setLevel(logging.INFO)
 stdout = CLILogHandler(sys.stdout)
-stdout.setLevel(logging.INFO)
+stdout.setLevel(logging.WARNING)
 log.handlers = [stdout]
 
 console = Console()
@@ -70,6 +71,7 @@ app.add_typer(user.app, name='user')
 app.add_typer(up.app, name='up')
 app.add_typer(check_attic.app, name='check_attic')
 app.add_typer(check_parents.app, name='check_parents')
+app.add_typer(check_smbclient.app, name='check_smbclient')
 app.add_typer(userlog.app, name='userlog')
 app.add_typer(quotas.app, name='quotas')
 app.add_typer(student.app, name='student')

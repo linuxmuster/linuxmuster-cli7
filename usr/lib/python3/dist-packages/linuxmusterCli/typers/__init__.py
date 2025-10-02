@@ -6,6 +6,7 @@ from .devices import *
 from .up import *
 from .check_attic import *
 from .check_parents import *
+from .check_smbclient import *
 from .userlog import *
 from .state import state
 from .quotas import *
