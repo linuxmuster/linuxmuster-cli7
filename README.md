@@ -19,14 +19,13 @@ Actually, followings commands are available (add `--help` to display all options
 
 ## Maintenance Details
 
-Linuxmuster.net official | ❌ NO*
+Linuxmuster.net official | ✅  YES
 :---: | :---: 
-[Community support](https://ask.linuxmuster.net) | ✅  YES**
+[Community support](https://ask.linuxmuster.net) | ✅  YES*
 Actively developed | ✅  YES
 Primary maintainer | arnaud@linuxmuster.net
     
-\* Even though this is not an official package, pull requests and issues are being looked at.  
-** The linuxmuster community consits of people who are nice and happy to help. They are not directly involved in the development though, and might not be able to help in any case.
+* The linuxmuster community consits of people who are nice and happy to help. They are not directly involved in the development though, and might not be able to help in any case.
 
 ## Screenshots
 
