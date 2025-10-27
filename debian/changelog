@@ -1,3 +1,9 @@
+linuxmuster-cli7 (7.3.11) lmn73; urgency=medium
+
+  * Check first password with option -c 
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Mon, 27 Oct 2025 22:44:07 +0100
+
 linuxmuster-cli7 (7.3.10) lmn73; urgency=medium
 
   * Add command to test smbclient connection (check_smbclient) 
