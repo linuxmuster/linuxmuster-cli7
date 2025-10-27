@@ -41,21 +41,32 @@ def ls(
         user: Annotated[str, typer.Argument()] = '',
         school: Annotated[str, typer.Option("--school", "-s")] = None,
         full: Annotated[bool, typer.Option("--full", "-f")] = False,
+        check_first_password: Annotated[bool, typer.Option("--check-first-pw", "-c")] = False,
         ):
 
     user = user.lower()
 
     if school is not None:
-        kwargs = {"school": school}
+        kwargs = {"school": school, 'dict': False}
     else:
-        kwargs = {}
+        kwargs = {'dict': False}
 
     if user.endswith("-exam"):
-        users_data = lr.get(f'/users/exam/{user}', **kwargs)
+        user_obj = lr.get(f'/users/exam/{user}', **kwargs)
     else:
-        users_data = lr.get(f'/users/{user}', **kwargs)
+        user_obj = lr.get(f'/users/{user}', **kwargs)
 
-    if not users_data:
+    user_data = user_obj.asdict()
+
+    if check_first_password:
+        if user_obj.test_first_password():
+            first_password_set = "  (still set:white_heavy_check_mark:)"
+        else:
+            first_password_set = "  (changed:cross_mark:)"
+
+        user_data['sophomorixFirstPassword'] += first_password_set
+
+    if not user_data:
         try:
             killlog = open("/var/log/sophomorix/userlog/user-kill.log", "r")
             for line in reversed(list(killlog)):
@@ -72,7 +83,7 @@ def ls(
         return
 
     if state.raw:
-        pprint(users_data)
+        pprint(user_data)
         return
 
     if state.csv:
@@ -100,11 +111,11 @@ def ls(
             output[name].add_column(style="cyan")
             output[name].add_column(style="yellow")
             for field in domain:
-                output[name].add_row(field, outformat(users_data[field]))
+                output[name].add_row(field, outformat(user_data[field]))
 
         output['Management'] = Table(show_header=False, title="[bright_magenta]Management", border_style="bright_magenta", expand=True, box=box.ROUNDED)
-        output['Management'].add_row(f'{"internet":<12}' + outformat(users_data['internet']), f'{"intranet":<12}' + outformat(users_data['intranet']), f'{"wifi":<12}' + outformat(users_data['wifi']))
-        output['Management'].add_row(f'{"isAdmin":<12}' + outformat(users_data['isAdmin']), f'{"printing":<12}' + outformat(users_data['printing']), f'{"webfilter":<12}' + outformat(users_data['webfilter']))
+        output['Management'].add_row(f'{"internet":<12}' + outformat(user_data['internet']), f'{"intranet":<12}' + outformat(user_data['intranet']), f'{"wifi":<12}' + outformat(user_data['wifi']))
+        output['Management'].add_row(f'{"isAdmin":<12}' + outformat(user_data['isAdmin']), f'{"printing":<12}' + outformat(user_data['printing']), f'{"webfilter":<12}' + outformat(user_data['webfilter']))
 
         output['Samba'] = Table(show_header=False, title="[bright_black]Samba", border_style="bright_black", expand=True, box=box.ROUNDED)
         output['Samba'].add_column(style="cyan")
@@ -117,9 +128,9 @@ def ls(
             field2 = samba[index + half] if index+half < len(samba) else None
             output['Samba'].add_row(
                 field1,
-                outformat(users_data.get(field1,''), fieldname=field1),
+                outformat(user_data.get(field1,''), fieldname=field1),
                 field2,
-                outformat(users_data.get(field2, ''), fieldname=field2)
+                outformat(user_data.get(field2, ''), fieldname=field2)
             )
 
         layout = Layout()
@@ -160,4 +171,4 @@ def ls(
         print(layout)
     else:
         # We can surely do better here
-        pprint(users_data)
+        pprint(user_data)
