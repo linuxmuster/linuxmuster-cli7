@@ -13,3 +13,4 @@ from .quotas import *
 from .student import *
 from .schoolclass import *
 from .mgmtgroup import *
+from .printers import *
