@@ -14,17 +14,14 @@ from .format import printf
 console = Console(emoji=False)
 app = typer.Typer()
 
-@app.callback(
-    invoke_without_command=True,
-    help="""Manage schoolclasses' groups."""
-)
-def manage(
+@app.command(help="""Manage schoolclasses' groups.""")
+def sync(
         schoolclass: Annotated[str, typer.Option("--scholclass", "-c", help="Comma separated list of schoolclasses to handle")] = '',
-        sync_teachers: Annotated[bool, typer.Option("--sync-teachers", help="Update the teachers group of this schoolclass")] = False,
-        sync_students: Annotated[bool, typer.Option("--sync-students", help="Update the students group of this schoolclass")] = False,
-        sync_parents: Annotated[bool, typer.Option("--sync-parents", help="Update the parents group of this schoolclass")] = False,
-        sync_groups: Annotated[bool, typer.Option("--sync-groups", help="Update the parents, teachers and students groups of this schoolclass")] = False,
-        sync_all: Annotated[bool, typer.Option("--sync-all", help="Update the parents, teachers and students groups of all schoolclasses")] = False,
+        sync_teachers: Annotated[bool, typer.Option("--teachers", help="Update the teachers group of this schoolclass")] = False,
+        sync_students: Annotated[bool, typer.Option("--students", help="Update the students group of this schoolclass")] = False,
+        sync_parents: Annotated[bool, typer.Option("--parents", help="Update the parents group of this schoolclass")] = False,
+        sync_groups: Annotated[bool, typer.Option("--groups", help="Update the parents, teachers and students groups of this schoolclass")] = False,
+        sync_all: Annotated[bool, typer.Option("--all", help="Update the parents, teachers and students groups of all schoolclasses")] = False,
         school: Annotated[str, typer.Option("--school", "-s")] = 'default-school',
         ):
 
