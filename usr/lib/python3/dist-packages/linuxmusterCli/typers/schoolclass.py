@@ -78,3 +78,53 @@ def sync(
     except Exception as e:
         print(str(e))
         sys.exit(1)
+
+@app.command(help="""Print schoolclasses teacher's memberships.""")
+def teachers(
+    schoolclass: Annotated[str, typer.Option("--scholclass", "-c", help="Comma separated list of schoolclasses to handle")] = '',
+    school: Annotated[str, typer.Option("--school", "-s")] = 'default-school',
+    ):
+
+    if not schoolclass:
+        schoolclasses = lr.get('/schoolclasses', school=school)
+    else:
+        schoolclasses = []
+        for c in schoolclass.split(','):
+            schoolclass = lr.get(f'/schoolclasses/{c}', school=school)
+            if schoolclass:
+                schoolclasses.append(schoolclass)
+
+    sorted(schoolclasses, key=lambda c: c['cn'])
+
+    table_results = Table(title=f"Schoolclasses teacher's memberships", show_lines=True)
+    table_results.add_column("Schoolclass", style="green")
+    table_results.add_column("Teachers", style="blue")
+
+    data = [[c.header for c in table_results.columns]]
+
+    teacher_cache = {}
+
+    for schoolclass in schoolclasses:
+
+        teachers_cn = schoolclass['sophomorixAdmins']
+        teacher_list = []
+
+        for cn in teachers_cn:
+            # Avoid requesting the same teachers more than once
+            if cn not in teacher_cache:
+                teacher = lr.get(f'/users/{cn}')
+                teacher_name = f"{teacher['sn']} {teacher['givenName']}"
+                teacher_cache[cn] = teacher_name
+
+            teacher_list.append(teacher_cache[cn])
+
+        if state.format:
+            data.append([schoolclass['cn'], ','.join(teacher_list)])
+        else:
+            table_results.add_row(schoolclass['cn'], ','.join(teacher_list))
+
+    if not state.format:
+        console.print(table_results)
+    else:
+        printf.format(data)
+
