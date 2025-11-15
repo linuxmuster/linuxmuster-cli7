@@ -16,7 +16,7 @@ app = typer.Typer()
 
 @app.command(help="""Manage schoolclasses' groups.""")
 def sync(
-        schoolclass: Annotated[str, typer.Option("--scholclass", "-c", help="Comma separated list of schoolclasses to handle")] = '',
+        schoolclass: Annotated[str, typer.Option("--schoolclass", "-c", help="Comma separated list of schoolclasses to handle")] = '',
         sync_teachers: Annotated[bool, typer.Option("--teachers", help="Update the teachers group of this schoolclass")] = False,
         sync_students: Annotated[bool, typer.Option("--students", help="Update the students group of this schoolclass")] = False,
         sync_parents: Annotated[bool, typer.Option("--parents", help="Update the parents group of this schoolclass")] = False,
@@ -81,7 +81,7 @@ def sync(
 
 @app.command(help="""Print schoolclasses teacher's memberships.""")
 def teachers(
-    schoolclass: Annotated[str, typer.Option("--scholclass", "-c", help="Comma separated list of schoolclasses to handle")] = '',
+    schoolclass: Annotated[str, typer.Option("--schoolclass", "-c", help="Comma separated list of schoolclasses to handle")] = '',
     school: Annotated[str, typer.Option("--school", "-s")] = 'default-school',
     ):
 
