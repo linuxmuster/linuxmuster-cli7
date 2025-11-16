@@ -1,3 +1,11 @@
+linuxmuster-cli7 (7.3.12) lmn73; urgency=medium
+
+  * Reorganize callback as command with sync name.
+  * Display teachers memberships in schoolclasses.
+  * Command to list printers and access. 
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Sun, 16 Nov 2025 14:03:40 +0100
+
 linuxmuster-cli7 (7.3.11) lmn73; urgency=medium
 
   * Check first password with option -c 
