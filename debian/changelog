@@ -1,3 +1,9 @@
+linuxmuster-cli7 (7.3.14) lmn73; urgency=medium
+
+  * Fix alignment and add color levels. 
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Thu, 11 Dec 2025 18:07:21 +0100
+
 linuxmuster-cli7 (7.3.13) lmn73; urgency=medium
 
   * Fix quotas display. 
