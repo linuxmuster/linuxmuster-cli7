@@ -42,8 +42,8 @@ def ls(
     table_quotas.add_column("User", style="cyan")
     table_quotas.add_column("Used global", style="yellow")
     table_quotas.add_column(f"Used {school}", style="green")
-    table_quotas.add_column("Cloud", style="green")
-    table_quotas.add_column("Mail", style="green")
+    table_quotas.add_column("Cloud", style="blue")
+    table_quotas.add_column("Mail", style="blue")
 
     data = [[c.header for c in table_quotas.columns]]
 
@@ -57,10 +57,28 @@ def ls(
             quotas['cloud'],
             quotas['mail']
         ])
+
+        global_level = "[green]"
+        school_level = "[green]"
+
+        if quotas['linuxmuster-global']['hard_limit'] != "NO LIMIT":
+            global_percent = 100 * quotas['linuxmuster-global']['used'] / quotas['linuxmuster-global']['hard_limit']
+            if global_percent > 90:
+                global_level = "[red]"
+            elif global_percent > 75:
+                global_level = "[yellow]"
+
+        if quotas['linuxmuster-global']['hard_limit'] != "NO LIMIT":
+            school_percent = 100 * quotas['linuxmuster-global']['used'] / quotas['linuxmuster-global']['hard_limit']
+            if school_percent > 90:
+                school_level = "[red]"
+            elif school_percent > 75:
+                school_level = "[yellow]"
+
         table_quotas.add_row(
             user,
-            f"{quotas['linuxmuster-global']['used']:>9.2f} / {quotas['linuxmuster-global']['hard_limit']}",
-            f"{quotas[school]['used']:>9.2f} / {quotas[school]['hard_limit']}",
+            f"{global_level}{quotas['linuxmuster-global']['used']:>9.2f} / {quotas['linuxmuster-global']['hard_limit']}",
+            f"{school_level}{quotas[school]['used']:>9.2f} / {quotas[school]['hard_limit']}",
             quotas['cloud'],
             quotas['mail']
         )
