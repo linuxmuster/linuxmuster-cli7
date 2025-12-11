@@ -59,8 +59,8 @@ def ls(
         ])
         table_quotas.add_row(
             user,
-            f"{quotas['linuxmuster-global']['used']:<9} / {quotas['linuxmuster-global']['hard_limit']}",
-            f"{quotas[school]['used']:<9} / {quotas[school]['hard_limit']}",
+            f"{quotas['linuxmuster-global']['used']:>9.2f} / {quotas['linuxmuster-global']['hard_limit']}",
+            f"{quotas[school]['used']:>9.2f} / {quotas[school]['hard_limit']}",
             quotas['cloud'],
             quotas['mail']
         )
