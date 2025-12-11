@@ -1,3 +1,9 @@
+linuxmuster-cli7 (7.3.15) lmn73; urgency=medium
+
+  * Sort by school percent. 
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Thu, 11 Dec 2025 22:01:44 +0100
+
 linuxmuster-cli7 (7.3.14) lmn73; urgency=medium
 
   * Fix alignment and add color levels. 
