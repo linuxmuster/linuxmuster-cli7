@@ -60,6 +60,7 @@ def ls(
 
         global_level = "[green]"
         school_level = "[green]"
+        school_percent = 0
 
         if quotas['linuxmuster-global']['hard_limit'] != "NO LIMIT":
             global_percent = 100 * quotas['linuxmuster-global']['used'] / quotas['linuxmuster-global']['hard_limit']
@@ -75,16 +76,23 @@ def ls(
             elif school_percent > 75:
                 school_level = "[yellow]"
 
-        table_quotas.add_row(
+        return (
             user,
             f"{global_level}{quotas['linuxmuster-global']['used']:>9.2f} / {quotas['linuxmuster-global']['hard_limit']}",
             f"{school_level}{quotas[school]['used']:>9.2f} / {quotas[school]['hard_limit']}",
             quotas['cloud'],
-            quotas['mail']
+            quotas['mail'],
+            school_percent
         )
 
     with futures.ThreadPoolExecutor() as executor:
         infos = executor.map(add_quotas, users)
+
+    # Sort by school_percent
+    results = sorted(list(infos), key=lambda l: -l[-1])
+
+    for result in results:
+        table_quotas.add_row(*result[:-1])
 
     if state.format:
         printf.format(data)
