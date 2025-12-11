@@ -19,7 +19,7 @@ app = typer.Typer()
 )
 def ls(
         #school: Annotated[str, typer.Option("--school", "-s", help="Select the users from a specific school.")] = 'default-school',
-        schoolclass: Annotated[str, typer.Option("--class", "-c", help="Only show the students of the specified schoolclass.")] = False,
+        schoolclass: Annotated[str, typer.Option("--class", "-c", help="Only show the students of the specified schoolclass.")] = '',
         teachers: Annotated[bool, typer.Option("--teachers", "-t", help="Only show the teachers.")] = False,
         #user: Annotated[bool, typer.Option("--user", "-u", help="Only show the specified.")] = False,
         ):
@@ -40,8 +40,8 @@ def ls(
 
     quotas = Table(title=f"Quotas {title_suffix}")
     quotas.add_column("User", style="cyan")
-    quotas.add_column("Global", style="yellow")
-    quotas.add_column(school, style="green")
+    quotas.add_column("Used global", style="yellow")
+    quotas.add_column(f"Used {school}", style="green")
     quotas.add_column("Cloud", style="green")
     quotas.add_column("Mail", style="green")
 
@@ -49,6 +49,7 @@ def ls(
 
     def add_quotas(user):
         user_quotas = get_user_quotas(user)
+        print(user, user_quotas)
 
         data.append([user, user_quotas['linuxmuster-global']['used'], user_quotas[school]['used'], user_quotas['cloud'], user_quotas['mail']])
         quotas.add_row(user, str(user_quotas['linuxmuster-global']['used']), str(user_quotas[school]['used']), user_quotas['cloud'], user_quotas['mail'])
