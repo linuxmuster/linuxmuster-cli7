@@ -68,8 +68,8 @@ def ls(
             elif global_percent > 75:
                 global_level = "[yellow]"
 
-        if quotas['linuxmuster-global']['hard_limit'] != "NO LIMIT":
-            school_percent = 100 * quotas['linuxmuster-global']['used'] / quotas['linuxmuster-global']['hard_limit']
+        if quotas[school]['hard_limit'] != "NO LIMIT":
+            school_percent = 100 * quotas[school]['used'] / quotas[school]['hard_limit']
             if school_percent > 90:
                 school_level = "[red]"
             elif school_percent > 75:
