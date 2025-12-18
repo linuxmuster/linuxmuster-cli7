@@ -1,4 +1,4 @@
-# import json
+import re
 import typer
 from datetime import datetime
 from .state import state
@@ -27,6 +27,28 @@ def outformat(value, fieldname=""):
     if str(value) == 'False':
         return ":cross_mark:"
     return value
+
+def _check_schoolclass_number(schoolclass):
+    """
+    Get number in a schoolclass name.
+
+    :param schoolclass: Dict of schoolclass attributes from LDAP.
+    """
+
+
+    n = re.findall(r'\d+', schoolclass['cn'])
+    if n:
+        return int(n[0])
+    else:
+        return 10000000 # just a big number to come after all schoolclasses
+
+def sort_schoolclasses(schoolclasses):
+    """
+    Sort a list of schoolclasses data from LDAP.
+    """
+
+
+    return sorted(schoolclasses, key=lambda s: (_check_schoolclass_number(s), s['cn']))
 
 class Format:
     """
