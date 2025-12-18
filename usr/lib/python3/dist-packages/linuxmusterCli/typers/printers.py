@@ -3,10 +3,11 @@ from typing_extensions import Annotated
 
 from rich.console import Console
 from rich.table import Table
+from rich import print
 from linuxmusterTools.lmnfile import LMNFile
 from linuxmusterTools.ldapconnector import LMNLdapReader as lr
 from .state import state
-from .format import printf
+from .format import printf, outformat
 
 
 console = Console(emoji=False)
@@ -39,7 +40,7 @@ def ls(
         devices_data
     ))
 
-    ldap_data = lr.get('/printers', attributes=['cn', 'member'])
+    ldap_data = lr.get('/printers', attributes=['cn', 'member', 'sophomorixHidden', 'sophomorixJoinable'])
 
     printers = Table(title=f"{len(devices_data)} printer(s)")
     printers.add_column("Room", style="cyan")
@@ -47,6 +48,8 @@ def ls(
     printers.add_column("IP", style="blue")
     printers.add_column("User(s) access", style="yellow")
     printers.add_column("Room(s) access", style="yellow")
+    printers.add_column("Hidden", justify="center")
+    printers.add_column("Joinable", justify="center")
 
     output = [[c.header for c in printers.columns]]
 
@@ -63,11 +66,27 @@ def ls(
                     else:
                         user_members.append(cn)
 
-                printers.add_row(device['room'], device['hostname'], device['ip'], ','.join(user_members), ','.join(computer_members) )
-                output.append([device['room'], device['hostname'], device['ip'], ','.join(user_members), ','.join(computer_members)])
+                printers.add_row(
+                    device['room'],
+                    device['hostname'],
+                    device['ip'],
+                    ','.join(user_members),
+                    ','.join(computer_members),
+                    outformat(ldap_device['sophomorixHidden']),
+                    outformat(ldap_device['sophomorixJoinable']),
+                )
+                output.append([
+                    device['room'],
+                    device['hostname'],
+                    device['ip'],
+                    ','.join(user_members),
+                    ','.join(computer_members),
+                    ldap_device['sophomorixHidden'],
+                    ldap_device['sophomorixJoinable'],
+                ])
                 break
 
     if state.format:
         printf.format(output)
     else:
-        console.print(printers)
+        print(printers)
