@@ -8,30 +8,11 @@ from rich.table import Table
 from rich.console import Console
 from rich.pretty import pprint
 from linuxmusterTools.ldapconnector import LMNLdapReader as lr
-from .state import state
 from .format import *
 
 
 console = Console(emoji=False)
 app = typer.Typer()
-
-def convert_sophomorix_time(t):
-    try:
-        return  datetime.strptime(t, '%Y%m%d%H%M%S.%fZ').strftime("%d %b %Y %H:%M:%S")
-    except Exception:
-        return t
-
-def outformat(value, fieldname=""):
-    if "Date" in fieldname:
-        return convert_sophomorix_time(value)
-
-    if isinstance(value, list):
-        return ','.join(value)
-    if str(value) == 'True':
-        return ":white_heavy_check_mark:"
-    if str(value) == 'False':
-        return ":cross_mark:"
-    return value
 
 @app.callback(
     invoke_without_command=True,
