@@ -9,7 +9,7 @@ from rich.table import Table
 from linuxmusterTools.common import lprint
 from linuxmusterTools.ldapconnector import LMNLdapReader as lr, LMNSchoolclass
 from .state import state
-from .format import printf, outformat
+from .format import printf, outformat, sort_schoolclasses
 
 
 console = Console(emoji=False)
@@ -95,7 +95,7 @@ def teachers(
             if schoolclass:
                 schoolclasses.append(schoolclass)
 
-    schoolclasses = sorted(schoolclasses, key=lambda c: c['cn'])
+    schoolclasses = sort_schoolclasses(schoolclasses)
 
     table_results = Table(title=f"Schoolclasses teacher's memberships", show_lines=True)
     table_results.add_column("Schoolclass", style="green")
