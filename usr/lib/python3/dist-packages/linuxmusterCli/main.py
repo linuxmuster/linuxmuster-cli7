@@ -25,6 +25,7 @@ from typers import (
     schoolclass,
     mgmtgroup,
     printers,
+    projects,
 )
 from typers.format import *
 from typing_extensions import Annotated
@@ -79,6 +80,7 @@ app.add_typer(student.app, name='student')
 app.add_typer(schoolclass.app, name='schoolclass')
 app.add_typer(mgmtgroup.app, name='mgmtgroup')
 app.add_typer(printers.app, name='printers')
+app.add_typer(projects.app, name='projects')
 
 @app.callback()
 def output(
