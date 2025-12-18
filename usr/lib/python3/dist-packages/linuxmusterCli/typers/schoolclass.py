@@ -3,12 +3,13 @@ import typer
 from typing_extensions import Annotated
 
 from rich.console import Console
+from rich import print
 from rich.table import Table
 
 from linuxmusterTools.common import lprint
 from linuxmusterTools.ldapconnector import LMNLdapReader as lr, LMNSchoolclass
 from .state import state
-from .format import printf
+from .format import printf, outformat
 
 
 console = Console(emoji=False)
@@ -94,11 +95,13 @@ def teachers(
             if schoolclass:
                 schoolclasses.append(schoolclass)
 
-    sorted(schoolclasses, key=lambda c: c['cn'])
+    schoolclasses = sorted(schoolclasses, key=lambda c: c['cn'])
 
     table_results = Table(title=f"Schoolclasses teacher's memberships", show_lines=True)
     table_results.add_column("Schoolclass", style="green")
     table_results.add_column("Teachers", style="blue")
+    table_results.add_column("Hidden", justify="center")
+    table_results.add_column("Joinable", justify="center")
 
     data = [[c.header for c in table_results.columns]]
 
@@ -119,12 +122,21 @@ def teachers(
             teacher_list.append(teacher_cache[cn])
 
         if state.format:
-            data.append([schoolclass['cn'], ','.join(teacher_list)])
+            data.append([
+                schoolclass['cn'],
+                ','.join(teacher_list),
+                schoolclass['sophomorixHidden'],
+                schoolclass['sophomorixJoinable']
+            ])
         else:
-            table_results.add_row(schoolclass['cn'], ','.join(teacher_list))
+            table_results.add_row(
+                schoolclass['cn'],
+                ','.join(teacher_list),
+                outformat(schoolclass['sophomorixHidden']),
+                outformat(schoolclass['sophomorixJoinable'])
+            )
 
     if not state.format:
-        console.print(table_results)
+        print(table_results)
     else:
         printf.format(data)
-
