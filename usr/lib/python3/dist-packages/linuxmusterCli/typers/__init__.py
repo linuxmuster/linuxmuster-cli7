@@ -11,6 +11,7 @@ from .userlog import *
 from .state import state
 from .quotas import *
 from .student import *
+from .students import *
 from .schoolclass import *
 from .mgmtgroup import *
 from .printers import *

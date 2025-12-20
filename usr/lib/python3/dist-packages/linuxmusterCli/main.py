@@ -22,6 +22,7 @@ from typers import (
     check_smbclient,
     quotas,
     student,
+    students,
     schoolclass,
     mgmtgroup,
     printers,
@@ -77,6 +78,7 @@ app.add_typer(check_smbclient.app, name='check_smbclient')
 app.add_typer(userlog.app, name='userlog')
 app.add_typer(quotas.app, name='quotas')
 app.add_typer(student.app, name='student')
+app.add_typer(students.app, name='students')
 app.add_typer(schoolclass.app, name='schoolclass')
 app.add_typer(mgmtgroup.app, name='mgmtgroup')
 app.add_typer(printers.app, name='printers')
