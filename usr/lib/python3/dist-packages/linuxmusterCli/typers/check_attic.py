@@ -19,17 +19,20 @@ app = typer.Typer()
     help="""Check unnecessary directories in attic."""
 )
 def check(
-        check_attic: Annotated[str, typer.Argument()] = '',
         school: Annotated[str, typer.Option("--school", "-s")] = None,
         ):
 
-    result = check_attic_dir()
-    attic_dir = "/srv/samba/schools/default-school/students/attic"
+
+    try:
+        result = check_attic_dir(school=school)
+    except Exception as e:
+        typer.secho(str(e), fg=typer.colors.RED)
+        return
 
     attic = Table(title=f"User's status in attic")
     attic.add_column("Username", style="cyan")
-    attic.add_column("School", style="cyan")
     attic.add_column("Status", style="yellow")
+    attic.add_column("School", style="cyan")
     attic.add_column("Directory path", style="green")
 
     to_delete = []
@@ -48,11 +51,13 @@ def check(
                 status = f"Account {details['status']} from {details['start']} to {details['end']}"
             else:
                 status = f"Account {details['status']} since {details['start']}"
+            attic_dir = f"//{SAMBA_DOMAIN}/{details['school']}/students/attic/{user}"
         else:
             status = "No information found"
+            attic_dir = ""
 
-        data.append([user, status, details['school'], f"{attic_dir}/{user}"])
-        attic.add_row(user, status, details['school'], f"{attic_dir}/{user}")
+        data.append([user, status, details['school'], attic_dir])
+        attic.add_row(user, status, details['school'], attic_dir)
 
     if state.format:
         printf.format(data)
@@ -64,7 +69,6 @@ def check(
             typer.confirm(f"You can delete the unnecessary directory by running:\n\n{cmd}\nRun this command now ?", abort=True)
             client = LMNSMBClient()
             for entry in to_delete:
-                print(entry)
                 client.switch(entry['school'])
                 client.deltree(f"students/attic/{entry['user']}")
                 typer.echo(typer.style(f"Attic directory of {user} deleted!", fg=typer.colors.RED))
