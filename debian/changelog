@@ -1,3 +1,14 @@
+linuxmuster-cli7 (7.3.16) lmn73; urgency=medium
+
+  * Display joinable and hidden attributes for schoolclasses.
+  * Sort schoolclasses by names.
+  * Display joinable and hidden attributes for printers.
+  * Add command to list projects.
+  * Add reset-internet command for students.
+  * Use smbclient to delete obsolet directories in attic. EXPERIMENTAL.
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Tue, 30 Dec 2025 18:02:34 +0100
+
 linuxmuster-cli7 (7.3.15) lmn73; urgency=medium
 
   * Sort by school percent. 
