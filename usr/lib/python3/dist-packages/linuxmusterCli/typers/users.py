@@ -32,7 +32,7 @@ def ls(
     elif students:
         url = '/users/search/student/'
     else:
-        url = '/users'
+        url = '/rawusers'
 
     users_data = lr.get(
         url,
