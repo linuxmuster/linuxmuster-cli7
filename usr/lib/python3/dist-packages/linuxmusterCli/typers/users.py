@@ -18,6 +18,7 @@ app = typer.Typer()
 def ls(
         filter_str: Annotated[str, typer.Argument()] = '',
         school: Annotated[str, typer.Option("--school", "-s")] = 'default-school',
+        status: Annotated[str, typer.Option("--status", "-c")] = '',
         admins: Annotated[bool, typer.Option("--admins", "-a")] = False,
         teachers: Annotated[bool, typer.Option("--teachers", "-t")] = False,
         students: Annotated[bool, typer.Option("--students", "-u")] = False,
@@ -52,6 +53,9 @@ def ls(
         lambda u: filter_str in u['displayName'].lower() or filter_str in u['sAMAccountName'].lower() or filter_str in u['sophomorixAdminClass'].lower(), 
         users_data
     ))
+
+    if status:
+        users_data = list(filter(lambda u: status == u['sophomorixStatus'], users_data))
 
     users_data = sorted(users_data, key=lambda u: (u['sophomorixRole'], u['sn'], u['givenName']))
 
