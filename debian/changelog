@@ -1,3 +1,11 @@
+linuxmuster-cli7 (7.3.17) lmn73; urgency=medium
+
+  * Accelerate loading time for lmncli users.
+  * Filter users per status in lmncli users.
+  * Display old status for attic users. 
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Thu, 01 Jan 2026 23:51:53 +0100
+
 linuxmuster-cli7 (7.3.16) lmn73; urgency=medium
 
   * Display joinable and hidden attributes for schoolclasses.
