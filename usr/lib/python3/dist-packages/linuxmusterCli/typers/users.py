@@ -4,6 +4,7 @@ from typing_extensions import Annotated
 from rich.console import Console
 from rich.table import Table
 from linuxmusterTools.ldapconnector import LMNLdapReader as lr
+from linuxmusterTools.common import convert_sophomorix_status
 from .state import state
 from .format import printf
 
@@ -67,7 +68,7 @@ def ls(
     users.add_column("Login", style="green")
     users.add_column("Adminclass", style="bright_magenta")
     users.add_column("Role", style="bright_magenta")
-    users.add_column("Status", style="yellow")
+    users.add_column("Status", style="yellow", justify="center")
 
     data = [[c.header for c in users.columns]]
     for user in users_data:
@@ -78,8 +79,10 @@ def ls(
         else:
             adminclass = user['sophomorixAdminClass']
             role = user['sophomorixRole']
-        data.append([user['sn'], user['givenName'], user['sAMAccountName'], adminclass, role, user['sophomorixStatus']])
-        users.add_row(user['sn'], user['givenName'], user['sAMAccountName'], adminclass, role, user['sophomorixStatus'])
+
+        status = f"{convert_sophomorix_status(user['sophomorixStatus'])} ({user['sophomorixStatus']})"
+        data.append([user['sn'], user['givenName'], user['sAMAccountName'], adminclass, role, status])
+        users.add_row(user['sn'], user['givenName'], user['sAMAccountName'], adminclass, role, status)
 
     if state.format:
         printf.format(data)
