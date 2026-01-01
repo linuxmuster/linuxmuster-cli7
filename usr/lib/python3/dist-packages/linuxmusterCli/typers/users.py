@@ -43,6 +43,8 @@ def ls(
             'givenName',
             'sAMAccountName',
             'sophomorixAdminClass',
+            'sophomorixAdminFile',
+            'sophomorixExitAdminClass',
             'sophomorixRole',
             'sophomorixStatus'
         ],
@@ -69,8 +71,15 @@ def ls(
 
     data = [[c.header for c in users.columns]]
     for user in users_data:
-        data.append([user['sn'], user['givenName'], user['sAMAccountName'], user['sophomorixAdminClass'], user['sophomorixRole'], user['sophomorixStatus']])
-        users.add_row(user['sn'], user['givenName'], user['sAMAccountName'], user['sophomorixAdminClass'], user['sophomorixRole'], user['sophomorixStatus'])
+        if user['sophomorixAdminClass'] == 'attic':
+            adminclass = f"attic ({user['sophomorixExitAdminClass']})"
+            plural_index = -4 if 'staff' in user['sophomorixAdminFile'] else -5
+            role = f"student ({user['sophomorixAdminFile'][:plural_index]})"
+        else:
+            adminclass = user['sophomorixAdminClass']
+            role = user['sophomorixRole']
+        data.append([user['sn'], user['givenName'], user['sAMAccountName'], adminclass, role, user['sophomorixStatus']])
+        users.add_row(user['sn'], user['givenName'], user['sAMAccountName'], adminclass, role, user['sophomorixStatus'])
 
     if state.format:
         printf.format(data)
