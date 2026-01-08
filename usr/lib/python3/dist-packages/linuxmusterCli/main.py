@@ -1,6 +1,7 @@
 #!/opt/linuxmuster/bin/python3
 
 import sys
+import distro
 import typer
 import subprocess
 import logging
@@ -103,7 +104,10 @@ def output(
 
 @app.command(help="Lists linuxmuster.net packages installed.")
 def version():
-    packages = Table()
+
+    distribution = f"{distro.name()} {distro.version()}"
+
+    packages = Table(title=distribution)
     packages.add_column("Status", style="green")
     packages.add_column("Packages", style="cyan")
     packages.add_column("Version", style="bright_magenta")
