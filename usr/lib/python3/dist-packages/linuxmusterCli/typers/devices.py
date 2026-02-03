@@ -40,7 +40,7 @@ def ls(
         devices_data
     ))
 
-    ldap_data = lr.get('/devices', attributes=['cn', 'sophomorixComputerMAC'])
+    ldap_data = lr.get('/devices', attributes=['cn', 'sophomorixComputerMAC', 'dn'])
 
     devices = Table(title=f"{len(devices_data)} device(s)")
     devices.add_column("Room", style="cyan")
@@ -55,7 +55,9 @@ def ls(
 
     for device in devices_data:
         for ldap_device in ldap_data:
-            if device['hostname'].lower() == ldap_device['cn'].lower() and device['mac'].lower() == ldap_device['sophomorixComputerMAC'].lower():
+            if device['hostname'].lower() == ldap_device['cn'].lower() and \
+            (device['mac'].lower() == ldap_device['sophomorixComputerMAC'].lower() or
+            "Domain Controllers" in ldap_device['dn']):
                 devices.add_row(device['room'], device['hostname'], device['group'], device['ip'], device['mac'], device['sophomorixRole'], "Registered")
                 output.append([device['room'], device['hostname'], device['group'], device['ip'], device['mac'], device['sophomorixRole'], "Registered"])
                 break
