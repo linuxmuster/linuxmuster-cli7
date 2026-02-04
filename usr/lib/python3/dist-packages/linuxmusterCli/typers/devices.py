@@ -55,11 +55,14 @@ def ls(
 
     for device in devices_data:
         for ldap_device in ldap_data:
-            if device['hostname'].lower() == ldap_device['cn'].lower() and \
-            (device['mac'].lower() == ldap_device['sophomorixComputerMAC'].lower() or
-            "Domain Controllers" in ldap_device['dn']):
-                devices.add_row(device['room'], device['hostname'], device['group'], device['ip'], device['mac'], device['sophomorixRole'], "Registered")
-                output.append([device['room'], device['hostname'], device['group'], device['ip'], device['mac'], device['sophomorixRole'], "Registered"])
+            if device['hostname'].lower() == ldap_device['cn'].lower():
+                if device['mac'].lower() == ldap_device['sophomorixComputerMAC'].lower():
+                    status = "Registered"
+                elif "Domain Controllers" in ldap_device['dn']:
+                    status = "Domain Controller"
+
+                devices.add_row(device['room'], device['hostname'], device['group'], device['ip'], device['mac'], device['sophomorixRole'], status)
+                output.append([device['room'], device['hostname'], device['group'], device['ip'], device['mac'], device['sophomorixRole'], status])
                 break
         else:
             devices.add_row(device['room'], device['hostname'], device['group'], device['ip'], device['mac'], device['sophomorixRole'], "Not registered")
