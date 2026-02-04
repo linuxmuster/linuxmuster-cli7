@@ -1,3 +1,9 @@
+linuxmuster-cli7 (7.3.19) lmn73; urgency=medium
+
+  * Fix domain controllers in devices command. 
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Wed, 04 Feb 2026 20:56:57 +0100
+
 linuxmuster-cli7 (7.3.18) lmn73; urgency=medium
 
   * Add distribution to version. 
