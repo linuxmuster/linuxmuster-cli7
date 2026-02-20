@@ -20,11 +20,12 @@ def manage(
         get_parents: Annotated[bool, typer.Option("--parents", help="Get the parents")] = False,
         add_parents: Annotated[str, typer.Option("--add-parents", help="Comma separated list of the cn of the parents to assign")] = '',
         remove_parents: Annotated[str, typer.Option("--remove-parents", help="Comma separated list of the cn of the parents to remove")] = '',
+        school: Annotated[str, typer.Option("--school", "-s")] = 'default-school',
         ):
 
     cn = student.lower()
     try:
-        student = LMNStudent(cn)
+        student = LMNStudent(cn, school=school)
         student_name = f"{student.data['givenName']} {student.data['sn']}"
     except Exception as e:
         console.print(str(e))
