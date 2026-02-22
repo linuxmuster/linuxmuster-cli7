@@ -1,3 +1,9 @@
+linuxmuster-cli7 (7.3.20) lmn73; urgency=medium
+
+  * Add school parameter for parents. 
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Sun, 22 Feb 2026 18:06:51 +0100
+
 linuxmuster-cli7 (7.3.19) lmn73; urgency=medium
 
   * Fix domain controllers in devices command. 
