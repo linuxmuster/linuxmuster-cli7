@@ -1,3 +1,9 @@
+linuxmuster-cli7 (7.4.1) lmn74; urgency=medium
+
+  * New package for 7.4.
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Sat, 25 Apr 2026 18:12:03 +0200
+
 linuxmuster-cli7 (7.3.20) lmn73; urgency=medium
 
   * Add school parameter for parents. 
