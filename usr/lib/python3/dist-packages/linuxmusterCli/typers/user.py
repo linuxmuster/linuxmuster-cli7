@@ -28,9 +28,9 @@ def ls(
     user = user.lower()
 
     if school is not None:
-        kwargs = {"school": school, 'dict': False}
+        kwargs = {"school": school, 'asdict': False}
     else:
-        kwargs = {'dict': False}
+        kwargs = {'asdict': False}
 
     if user.endswith("-exam"):
         user_obj = lr.get(f'/users/exam/{user}', **kwargs)
