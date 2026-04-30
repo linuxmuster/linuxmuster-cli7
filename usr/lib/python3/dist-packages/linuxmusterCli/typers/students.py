@@ -23,10 +23,10 @@ def reset_internet(
 
     if schoolclass:
         students = [student
-                    for student in lr.get('/rawroles/student', school=school, asdict=False)
+                    for student in lr.get('/rawroles/student', school=school, as_dict=False)
                     if student.sophomorixAdminClass in schoolclass]
     else:
-        students = lr.get('/rawroles/student', school=school, asdict=False)
+        students = lr.get('/rawroles/student', school=school, as_dict=False)
 
     internet_group = LMNMgmtGroup('internet')
 
