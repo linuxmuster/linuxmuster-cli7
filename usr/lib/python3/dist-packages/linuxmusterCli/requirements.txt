@@ -5,4 +5,4 @@ pyyaml
 rich
 termcolor
 typer
-
+typing-extensions

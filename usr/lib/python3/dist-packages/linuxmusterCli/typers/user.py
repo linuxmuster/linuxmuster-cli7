@@ -28,16 +28,16 @@ def ls(
     user = user.lower()
 
     if school is not None:
-        kwargs = {"school": school, 'as_dict': False}
+        kwargs = {"school": school, 'dict': False}
     else:
-        kwargs = {'as_dict': False}
+        kwargs = {'dict': False}
 
     if user.endswith("-exam"):
         user_obj = lr.get(f'/users/exam/{user}', **kwargs)
     else:
         user_obj = lr.get(f'/users/{user}', **kwargs)
 
-    user_data = user_obj.as_dict()
+    user_data = user_obj.asdict()
 
     if check_first_password:
         if user_obj.test_first_password():
