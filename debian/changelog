@@ -1,3 +1,10 @@
+linuxmuster-cli7 (7.4.2) lmn74; urgency=medium
+
+  * Avoid var shadowing with lmntools.
+  * Add missing dependency typing-extensions. 
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Tue, 16 Jun 2026 17:23:43 +0200
+
 linuxmuster-cli7 (7.4.1) lmn74; urgency=medium
 
   * New package for 7.4.
