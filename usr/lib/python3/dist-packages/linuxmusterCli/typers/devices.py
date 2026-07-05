@@ -28,7 +28,7 @@ def ls(
     filter_str = filter_str.lower()
 
     with LMNFile(f'/etc/linuxmuster/sophomorix/{school}/{prefix}devices.csv', 'r') as f:
-        devices_data = list(filter(lambda d:d['room'][0] != "#", f.read()))
+        devices_data = list(filter(lambda d: not d['room'].startswith("#"), f.read()))
         devices_data = sorted(devices_data, key=lambda d: (d['room'], d['hostname']))
 
     devices_data = list(filter(
@@ -60,6 +60,8 @@ def ls(
                     status = "Registered"
                 elif "Domain Controllers" in ldap_device['dn']:
                     status = "Domain Controller"
+                else:
+                    status = "Unknown"
 
                 devices.add_row(device['room'], device['hostname'], device['group'], device['ip'], device['mac'], device['sophomorixRole'], status)
                 output.append([device['room'], device['hostname'], device['group'], device['ip'], device['mac'], device['sophomorixRole'], status])
