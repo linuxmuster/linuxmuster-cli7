@@ -22,9 +22,10 @@ def reset_internet(
 
 
     if schoolclass:
+        schoolclass_list = [s.strip() for s in schoolclass.split(',')]
         students = [student
                     for student in lr.get('/rawroles/student', school=school, dict=False)
-                    if student.sophomorixAdminClass in schoolclass]
+                    if student.sophomorixAdminClass in schoolclass_list]
     else:
         students = lr.get('/rawroles/student', school=school, dict=False)
 
