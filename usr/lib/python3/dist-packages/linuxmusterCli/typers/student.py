@@ -38,7 +38,7 @@ def manage(
                 student.add_parent(parent)
             typer.secho(f"Parents {add_parents} added!\n", fg=typer.colors.GREEN)
         except Exception as e:
-            typer.secho(str(e), fg=typer.Colors.RED)
+            typer.secho(str(e), fg=typer.colors.RED)
 
     if remove_parents:
         get_parents = True
@@ -47,7 +47,7 @@ def manage(
                 student.remove_parent(parent)
             typer.secho(f"Parents {remove_parents} removed!\n", fg=typer.colors.GREEN)
         except Exception as e:
-            typer.secho(str(e, fg=typer.colors.RED))
+            typer.secho(str(e), fg=typer.colors.RED)
 
     if get_parents:
         if student.parents:
