@@ -112,10 +112,12 @@ def version():
     packages.add_column("Packages", style="cyan")
     packages.add_column("Version", style="bright_magenta")
 
-    command = "dpkg -l | grep 'linuxmuster\\|sophomorix'"
-    p = subprocess.Popen(command, shell=True,stdout=subprocess.PIPE,stderr=subprocess.STDOUT)
+    p = subprocess.Popen(['dpkg', '-l'], stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
     for package in p.stdout.readlines():
-        details = package.decode().split()
+        line = package.decode()
+        if 'linuxmuster' not in line and 'sophomorix' not in line:
+            continue
+        details = line.split()
         status, name, version  = details[:3]
         packages.add_row(status, name, version)
     console.print(packages)
