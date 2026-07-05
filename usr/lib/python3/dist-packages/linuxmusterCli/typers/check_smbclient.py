@@ -41,11 +41,12 @@ def check():
     p("## Authentication:")
     p("Teacher login:", end="")
     teacher = input()
-    uid = pwd.getpwnam(teacher).pw_uid
 
     if not teacher:
         print("\033[1m\033[91m Please enter a valid user login \033[39m\033[0m")
         sys.exit()
+
+    uid = pwd.getpwnam(teacher).pw_uid
 
     pw = pwinput(prompt="\033[1m\033[38;5;214m Password:\033[39m\033[0m")
 
