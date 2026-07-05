@@ -49,13 +49,12 @@ def ls(
 
     if not user_data:
         try:
-            killlog = open("/var/log/sophomorix/userlog/user-kill.log", "r")
-            for line in reversed(list(killlog)):
-                if f'::{user}::' in line:
-                    killdate = convert_sophomorix_time(line.split('::')[2])
-                    console.print(f"Account of user {user} was killed at {killdate}")
-                    break
-            killlog.close()
+            with open("/var/log/sophomorix/userlog/user-kill.log", "r") as killlog:
+                for line in reversed(list(killlog)):
+                    if f'::{user}::' in line:
+                        killdate = convert_sophomorix_time(line.split('::')[2])
+                        console.print(f"Account of user {user} was killed at {killdate}")
+                        break
             return
         except Exception as e:
             console.print(str(e))
