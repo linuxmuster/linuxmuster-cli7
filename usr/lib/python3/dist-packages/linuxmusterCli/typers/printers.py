@@ -29,7 +29,7 @@ def ls(
     filter_str = filter_str.lower()
 
     with LMNFile(f'/etc/linuxmuster/sophomorix/{school}/{prefix}devices.csv', 'r') as f:
-        devices_data = list(filter(lambda d:d['room'][0] != "#", f.read()))
+        devices_data = list(filter(lambda d: not d['room'].startswith("#"), f.read()))
         devices_data = sorted(devices_data, key=lambda d: (d['room'], d['hostname']))
 
     devices_data = list(filter(
@@ -60,7 +60,10 @@ def ls(
                 user_members = []
 
                 for member_dn in ldap_device['member']:
-                    cn = member_dn.split(',')[0].split('=')[1]
+                    parts = member_dn.split(',')[0].split('=')
+                    if len(parts) < 2:
+                        continue
+                    cn = parts[1]
                     if ',OU=Devices,' in member_dn:
                         computer_members.append(cn)
                     else:
