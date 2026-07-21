@@ -1,3 +1,9 @@
+linuxmuster-cli7 (7.4.4) lmn74; urgency=medium
+
+  * Fix dict parameter in students. Fix #5. 
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Tue, 21 Jul 2026 23:36:20 +0200
+
 linuxmuster-cli7 (7.4.3) lmn74; urgency=medium
 
     * Fix shell injection in `lmncli version` (dpkg -l via shell=True).
