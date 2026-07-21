@@ -1,3 +1,17 @@
+linuxmuster-cli7 (7.4.3) lmn74; urgency=medium
+
+    * Fix shell injection in `lmncli version` (dpkg -l via shell=True).
+    * Fix crash on error in `student manage` (invalid typer.Colors.RED, missing paren).
+    * Fix reset-internet matching schoolclass by substring instead of exact name.
+    * Fix IndexError on malformed DN in printers and devices listing.
+    * Fix room prefix filter using startswith instead of unsafe index access.
+    * Add "Unknown" status fallback in devices listing.
+    * Use context manager for user-kill log file handle.
+    * Guard against empty teacher login in check_smbclient.
+    * Rename asdict -> as_dict to match linuxmuster-tools. 
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Tue, 21 Jul 2026 17:51:35 +0200
+
 linuxmuster-cli7 (7.4.2) lmn74; urgency=medium
 
   * Avoid var shadowing with lmntools.
