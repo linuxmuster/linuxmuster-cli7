@@ -101,3 +101,38 @@ def manage(
             typer.secho(f"Removed: {', '.join(removed)}", fg=typer.colors.GREEN)
         for user, error in failures:
             typer.secho(f"Could not remove {user}: {error}", fg=typer.colors.RED)
+
+@app.command(help="""Create a new lmngroup.""")
+def create(
+        group: Annotated[str, typer.Argument(help="The lmngroup to create")],
+        school: Annotated[str, typer.Option("--school", "-s")] = 'default-school',
+        ):
+
+    try:
+        lmngroup = LMNGroup(group, school=school)
+    except Exception as e:
+        sys.exit(str(e))
+
+    if not lmngroup.new:
+        sys.exit(f"Group {group} already exists in ldap.")
+
+    lmngroup.create()
+    typer.secho(f"Group {group} created.", fg=typer.colors.GREEN)
+
+@app.command(help="""Delete a lmngroup.""")
+def delete(
+        group: Annotated[str, typer.Argument(help="The lmngroup to delete")],
+        school: Annotated[str, typer.Option("--school", "-s")] = 'default-school',
+        ):
+
+    try:
+        lmngroup = LMNGroup(group, school=school)
+    except Exception as e:
+        sys.exit(str(e))
+
+    if lmngroup.new:
+        sys.exit(f"Group {group} does not exist in ldap.")
+
+    typer.confirm(f"Delete group {group}?", abort=True)
+    lmngroup.delete()
+    typer.secho(f"Group {group} deleted.", fg=typer.colors.GREEN)

@@ -40,7 +40,16 @@ class FakeLMNGroup:
         self.added = []
         self.removed = []
         self.invalid_users = set()
+        self.created = False
+        self.deleted = False
         FakeLMNGroup.instances.append(self)
+
+    def create(self):
+        self.created = True
+        self.new = False
+
+    def delete(self):
+        self.deleted = True
 
     def add_members(self, userlist):
         failures = []
@@ -234,6 +243,96 @@ class TestManage:
         monkeypatch.setattr(lmngroup, 'LMNGroup', FakeRaisingGroup)
 
         result = runner.invoke(lmngroup.app, ['manage', 'robotics', '--add-members', 'johndoe'])
+
+        assert result.exit_code == 1
+        assert 'was not found in ldap' in result.output
+
+
+class TestCreate:
+
+    def setup_method(self):
+        FakeLMNGroup.instances = []
+
+    def test_creates_a_new_group(self, runner, monkeypatch):
+        class FakeNewGroup(FakeLMNGroup):
+            def __init__(self, cn, school='default-school'):
+                super().__init__(cn, school=school)
+                self.new = True
+
+        monkeypatch.setattr(lmngroup, 'LMNGroup', FakeNewGroup)
+
+        result = runner.invoke(lmngroup.app, ['create', 'newgroup'])
+
+        assert result.exit_code == 0
+        assert FakeNewGroup.instances[0].created is True
+        assert 'created' in result.output
+
+    def test_exits_if_group_already_exists(self, runner, monkeypatch):
+        monkeypatch.setattr(lmngroup, 'LMNGroup', FakeLMNGroup)
+
+        result = runner.invoke(lmngroup.app, ['create', 'robotics'])
+
+        assert result.exit_code == 1
+        assert 'already exists in ldap' in result.output
+        assert FakeLMNGroup.instances[0].created is False
+
+    def test_exits_with_message_on_constructor_error(self, runner, monkeypatch):
+        class FakeRaisingGroup:
+            def __init__(self, cn, school='default-school'):
+                raise Exception(f"School {school} was not found in ldap.")
+
+        monkeypatch.setattr(lmngroup, 'LMNGroup', FakeRaisingGroup)
+
+        result = runner.invoke(lmngroup.app, ['create', 'robotics'])
+
+        assert result.exit_code == 1
+        assert 'was not found in ldap' in result.output
+
+
+class TestDelete:
+
+    def setup_method(self):
+        FakeLMNGroup.instances = []
+
+    def test_deletes_an_existing_group_after_confirmation(self, runner, monkeypatch):
+        monkeypatch.setattr(lmngroup, 'LMNGroup', FakeLMNGroup)
+
+        result = runner.invoke(lmngroup.app, ['delete', 'robotics'], input='y\n')
+
+        assert result.exit_code == 0
+        assert FakeLMNGroup.instances[0].deleted is True
+        assert 'deleted' in result.output
+
+    def test_aborts_without_confirmation(self, runner, monkeypatch):
+        monkeypatch.setattr(lmngroup, 'LMNGroup', FakeLMNGroup)
+
+        result = runner.invoke(lmngroup.app, ['delete', 'robotics'], input='n\n')
+
+        assert result.exit_code != 0
+        assert FakeLMNGroup.instances[0].deleted is False
+
+    def test_exits_if_group_does_not_exist(self, runner, monkeypatch):
+        class FakeNewGroup(FakeLMNGroup):
+            def __init__(self, cn, school='default-school'):
+                super().__init__(cn, school=school)
+                self.new = True
+
+        monkeypatch.setattr(lmngroup, 'LMNGroup', FakeNewGroup)
+
+        result = runner.invoke(lmngroup.app, ['delete', 'ghost'])
+
+        assert result.exit_code == 1
+        assert 'does not exist in ldap' in result.output
+        assert FakeNewGroup.instances[0].deleted is False
+
+    def test_exits_with_message_on_constructor_error(self, runner, monkeypatch):
+        class FakeRaisingGroup:
+            def __init__(self, cn, school='default-school'):
+                raise Exception(f"School {school} was not found in ldap.")
+
+        monkeypatch.setattr(lmngroup, 'LMNGroup', FakeRaisingGroup)
+
+        result = runner.invoke(lmngroup.app, ['delete', 'robotics'])
 
         assert result.exit_code == 1
         assert 'was not found in ldap' in result.output
