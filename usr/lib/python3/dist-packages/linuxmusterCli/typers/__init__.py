@@ -14,5 +14,6 @@ from .student import *
 from .students import *
 from .schoolclass import *
 from .mgmtgroup import *
+from .lmngroup import *
 from .printers import *
 from .projects import *
