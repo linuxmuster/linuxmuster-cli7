@@ -6,7 +6,7 @@ from rich.console import Console
 from rich.table import Table
 from rich import print
 
-from linuxmusterTools.ldapconnector import LMNLdapReader as lr, LMNGroup
+from linuxmusterTools.ldapconnector import LMNLdapReader as lr, LMNGroup, find_legacy_groups
 from .state import state
 from .format import printf, outformat
 
@@ -136,3 +136,65 @@ def delete(
     typer.confirm(f"Delete group {group}?", abort=True)
     lmngroup.delete()
     typer.secho(f"Group {group} deleted.", fg=typer.colors.GREEN)
+
+@app.command(help="""List legacy sophomorix-groups not yet migrated to OU=LMNGroups.""")
+def legacy(
+        school: Annotated[str, typer.Option("--school", "-s")] = 'default-school',
+        ):
+
+    groups_data = find_legacy_groups(school=school)
+    groups_data = sorted(groups_data, key=lambda g: g['cn'])
+
+    groups = Table(title=f"{len(groups_data)} legacy sophomorix-group(s)", show_lines=True)
+    groups.add_column("Name", style="cyan")
+    groups.add_column("Description", style="white")
+    groups.add_column("Member(s)", style="yellow")
+
+    output = [[c.header for c in groups.columns]]
+
+    for group in groups_data:
+        member_cns = []
+        for member_dn in group['member']:
+            parts = member_dn.split(',')[0].split('=')
+            if len(parts) < 2:
+                continue
+            member_cns.append(parts[1])
+
+        groups.add_row(group['cn'], group['description'], ','.join(member_cns))
+        output.append([group['cn'], group['description'], ','.join(member_cns)])
+
+    if state.format:
+        printf.format(output)
+    else:
+        print(groups)
+
+@app.command(help="""Migrate a legacy sophomorix-group (OU=Projects) to OU=LMNGroups.""")
+def migrate(
+        group: Annotated[str, typer.Argument(help="The group to migrate")],
+        school: Annotated[str, typer.Option("--school", "-s")] = 'default-school',
+        ):
+
+    try:
+        lmngroup = LMNGroup(group, school=school)
+    except Exception as e:
+        sys.exit(str(e))
+
+    if lmngroup.new:
+        sys.exit(f"Group {group} does not exist in ldap.")
+
+    if lmngroup.data['sophomorixType'] == 'lmngroup':
+        sys.exit(f"Group {group} is already a lmngroup, nothing to migrate.")
+
+    old_dn = lmngroup.data['distinguishedName']
+    lmngroup.migrate()
+    typer.secho(f"Group {group} migrated to OU=LMNGroups.", fg=typer.colors.GREEN)
+
+    # migrate() is expected to move the entry, not copy it: this leftover
+    # check is a safety net in case the move didn't clean up the old dn.
+    if lr.get(f'/dn/{old_dn}'):
+        typer.secho(f"Warning: a leftover entry still exists at {old_dn}.", fg=typer.colors.YELLOW)
+        if typer.confirm(f"Delete the leftover entry at {old_dn}?"):
+            lmngroup.lw._del(old_dn)
+            typer.secho("Leftover entry deleted.", fg=typer.colors.GREEN)
+        else:
+            typer.secho(f"Leftover entry left in place at {old_dn}.", fg=typer.colors.YELLOW)

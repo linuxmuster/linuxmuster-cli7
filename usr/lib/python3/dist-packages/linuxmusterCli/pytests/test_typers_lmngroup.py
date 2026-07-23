@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 from linuxmusterCli.typers import lmngroup
 from linuxmusterCli.typers.state import state
 
@@ -42,6 +44,12 @@ class FakeLMNGroup:
         self.invalid_users = set()
         self.created = False
         self.deleted = False
+        self.migrated = False
+        self.data = {
+            'sophomorixType': 'sophomorix-group',
+            'distinguishedName': f'CN={cn},OU=Projects,OU={school},OU=SCHOOLS,DC=linuxmuster,DC=lan',
+        }
+        self.lw = MagicMock()
         FakeLMNGroup.instances.append(self)
 
     def create(self):
@@ -50,6 +58,10 @@ class FakeLMNGroup:
 
     def delete(self):
         self.deleted = True
+
+    def migrate(self):
+        self.migrated = True
+        self.data['sophomorixType'] = 'lmngroup'
 
     def add_members(self, userlist):
         failures = []
@@ -333,6 +345,131 @@ class TestDelete:
         monkeypatch.setattr(lmngroup, 'LMNGroup', FakeRaisingGroup)
 
         result = runner.invoke(lmngroup.app, ['delete', 'robotics'])
+
+        assert result.exit_code == 1
+        assert 'was not found in ldap' in result.output
+
+
+class TestLegacy:
+
+    def test_lists_legacy_groups(self, runner, monkeypatch):
+        legacy_data = [
+            {
+                'cn': 'p_old', 'description': 'legacy project',
+                'member': ['CN=alice,OU=Students,OU=default-school,OU=SCHOOLS,DC=linuxmuster,DC=lan'],
+            },
+        ]
+        monkeypatch.setattr(lmngroup, 'find_legacy_groups', lambda school='default-school': list(legacy_data))
+
+        result = runner.invoke(lmngroup.app, ['legacy'])
+
+        assert result.exit_code == 0
+        assert 'p_old' in result.output
+        assert 'alice' in result.output
+        assert '1 legacy sophomorix-group(s)' in result.output
+
+    def test_school_option_is_forwarded(self, runner, monkeypatch):
+        seen = {}
+
+        def fake_find(school='default-school'):
+            seen['school'] = school
+            return []
+
+        monkeypatch.setattr(lmngroup, 'find_legacy_groups', fake_find)
+
+        runner.invoke(lmngroup.app, ['legacy', '--school', 'other-school'])
+
+        assert seen['school'] == 'other-school'
+
+    def test_raw_format_output(self, runner, monkeypatch):
+        legacy_data = [
+            {'cn': 'p_old', 'description': 'legacy project', 'member': []},
+        ]
+        monkeypatch.setattr(lmngroup, 'find_legacy_groups', lambda school='default-school': list(legacy_data))
+        state.format = True
+        state.raw = True
+
+        result = runner.invoke(lmngroup.app, ['legacy'])
+
+        assert result.exit_code == 0
+        assert 'p_old\tlegacy project\t' in result.output
+
+
+class TestMigrate:
+
+    def setup_method(self):
+        FakeLMNGroup.instances = []
+
+    def test_migrates_a_legacy_group(self, runner, monkeypatch):
+        monkeypatch.setattr(lmngroup, 'LMNGroup', FakeLMNGroup)
+        monkeypatch.setattr(lmngroup.lr, 'get', lambda url, **kw: None)
+
+        result = runner.invoke(lmngroup.app, ['migrate', 'p_old'])
+
+        assert result.exit_code == 0
+        assert FakeLMNGroup.instances[0].migrated is True
+        assert 'migrated' in result.output
+        assert 'leftover' not in result.output
+
+    def test_warns_and_deletes_leftover_entry_when_confirmed(self, runner, monkeypatch):
+        monkeypatch.setattr(lmngroup, 'LMNGroup', FakeLMNGroup)
+        monkeypatch.setattr(lmngroup.lr, 'get', lambda url, **kw: {'cn': 'p_old'})
+
+        result = runner.invoke(lmngroup.app, ['migrate', 'p_old'], input='y\n')
+        old_dn = FakeLMNGroup.instances[0].data['distinguishedName']
+
+        assert result.exit_code == 0
+        assert 'leftover entry still exists' in result.output
+        assert 'Leftover entry deleted' in result.output
+        FakeLMNGroup.instances[0].lw._del.assert_called_once_with(old_dn)
+
+    def test_warns_and_keeps_leftover_entry_when_declined(self, runner, monkeypatch):
+        monkeypatch.setattr(lmngroup, 'LMNGroup', FakeLMNGroup)
+        monkeypatch.setattr(lmngroup.lr, 'get', lambda url, **kw: {'cn': 'p_old'})
+
+        result = runner.invoke(lmngroup.app, ['migrate', 'p_old'], input='n\n')
+
+        assert result.exit_code == 0
+        assert 'leftover entry still exists' in result.output
+        assert 'left in place' in result.output
+        assert not FakeLMNGroup.instances[0].lw._del.called
+
+    def test_exits_if_already_a_lmngroup(self, runner, monkeypatch):
+        class FakeAlreadyMigrated(FakeLMNGroup):
+            def __init__(self, cn, school='default-school'):
+                super().__init__(cn, school=school)
+                self.data['sophomorixType'] = 'lmngroup'
+
+        monkeypatch.setattr(lmngroup, 'LMNGroup', FakeAlreadyMigrated)
+
+        result = runner.invoke(lmngroup.app, ['migrate', 'robotics'])
+
+        assert result.exit_code == 1
+        assert 'already a lmngroup' in result.output
+        assert FakeAlreadyMigrated.instances[0].migrated is False
+
+    def test_exits_if_group_does_not_exist(self, runner, monkeypatch):
+        class FakeNewGroup(FakeLMNGroup):
+            def __init__(self, cn, school='default-school'):
+                super().__init__(cn, school=school)
+                self.new = True
+
+        monkeypatch.setattr(lmngroup, 'LMNGroup', FakeNewGroup)
+
+        result = runner.invoke(lmngroup.app, ['migrate', 'ghost'])
+
+        assert result.exit_code == 1
+        assert 'does not exist in ldap' in result.output
+        assert FakeNewGroup.instances[0].migrated is False
+
+    def test_exits_with_message_on_constructor_error(self, runner, monkeypatch):
+        class FakeRaisingGroup:
+            def __init__(self, cn, school='default-school'):
+                raise Exception(f"School {school} was not found in ldap.")
+
+        monkeypatch.setattr(lmngroup, 'LMNGroup', FakeRaisingGroup)
+
+        result = runner.invoke(lmngroup.app, ['migrate', 'p_old'])
 
         assert result.exit_code == 1
         assert 'was not found in ldap' in result.output
