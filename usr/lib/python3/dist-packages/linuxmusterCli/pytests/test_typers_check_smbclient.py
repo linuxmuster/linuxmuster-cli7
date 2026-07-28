@@ -1,7 +1,10 @@
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
+import pexpect
+import pwinput as pwinput_module
 import pytest
+import smbclient
 
 from linuxmusterCli.typers import check_smbclient
 
@@ -29,6 +32,12 @@ def _never_touch_real_privileges(monkeypatch):
     (and this sandbox is attached to a live domain). Patch all of it
     unconditionally for every test in this file, regardless of which branch
     the individual test means to exercise.
+
+    pexpect/smbclient/pwinput are imported locally inside check() (deferred,
+    since they pull in spnego/gssapi/cryptography, ~60ms, and only this one
+    interactive command needs them) -- patch the real packages directly
+    (imported above) rather than a `check_smbclient.xxx` module attribute,
+    since that attribute no longer exists at module scope.
     """
 
     monkeypatch.setattr(check_smbclient.os, 'setuid', MagicMock())
@@ -36,10 +45,10 @@ def _never_touch_real_privileges(monkeypatch):
     monkeypatch.setattr(check_smbclient.os, 'chown', MagicMock())
     monkeypatch.setattr(check_smbclient.time, 'sleep', MagicMock())
     monkeypatch.setattr(check_smbclient.pwd, 'getpwnam', lambda name: SimpleNamespace(pw_uid=1000))
-    monkeypatch.setattr(check_smbclient.pexpect, 'spawn', lambda *a, **kw: MagicMock())
-    monkeypatch.setattr(check_smbclient, 'pwinput', lambda prompt='': 'secret')
+    monkeypatch.setattr(pexpect, 'spawn', lambda *a, **kw: MagicMock())
+    monkeypatch.setattr(pwinput_module, 'pwinput', lambda prompt='': 'secret')
     monkeypatch.setattr(check_smbclient.os.path, 'isfile', lambda path: True)
-    monkeypatch.setattr(check_smbclient.smbclient, 'scandir', lambda path: iter([]))
+    monkeypatch.setattr(smbclient, 'scandir', lambda path: iter([]))
 
 
 class TestCheck:
@@ -62,9 +71,9 @@ class TestCheck:
         monkeypatch.setattr(check_smbclient.os, 'setuid', setuid)
         monkeypatch.setattr(check_smbclient.os, 'setgid', setgid)
         monkeypatch.setattr(check_smbclient.os, 'chown', chown)
-        monkeypatch.setattr(check_smbclient.pexpect, 'spawn', lambda *a, **kw: spawn)
+        monkeypatch.setattr(pexpect, 'spawn', lambda *a, **kw: spawn)
         monkeypatch.setattr(
-            check_smbclient.smbclient, 'scandir',
+            smbclient, 'scandir',
             lambda path: iter([FakeDirEntry('file1.txt', False), FakeDirEntry('subdir', True)]),
         )
 
@@ -84,8 +93,8 @@ class TestCheck:
 
     def test_no_password_falls_back_to_existing_kerberos_ticket(self, runner, monkeypatch):
         spawn = MagicMock()
-        monkeypatch.setattr(check_smbclient.pexpect, 'spawn', lambda *a, **kw: spawn)
-        monkeypatch.setattr(check_smbclient, 'pwinput', lambda prompt='': '')
+        monkeypatch.setattr(pexpect, 'spawn', lambda *a, **kw: spawn)
+        monkeypatch.setattr(pwinput_module, 'pwinput', lambda prompt='': '')
 
         result = runner.invoke(check_smbclient.app, [], input='\ntdoe\n')
 
@@ -116,7 +125,7 @@ class TestCheck:
                 raise Exception('boom')
             return iter([])
 
-        monkeypatch.setattr(check_smbclient.smbclient, 'scandir', fake_scandir)
+        monkeypatch.setattr(smbclient, 'scandir', fake_scandir)
 
         result = runner.invoke(check_smbclient.app, [], input='\ntdoe\n')
 
@@ -131,7 +140,7 @@ class TestCheck:
             seen_paths.append(path)
             return iter([])
 
-        monkeypatch.setattr(check_smbclient.smbclient, 'scandir', fake_scandir)
+        monkeypatch.setattr(smbclient, 'scandir', fake_scandir)
 
         result = runner.invoke(check_smbclient.app, [], input='server.linuxmuster.lan\ntdoe\n')
 

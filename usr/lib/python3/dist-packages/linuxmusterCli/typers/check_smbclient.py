@@ -7,12 +7,8 @@ import os
 import sys
 import pwd
 import subprocess
-import pexpect
 import time
-import smbclient
 
-from smbprotocol.exceptions import SMBOSError
-from pwinput import pwinput
 from linuxmusterTools.lmnconfig import SAMBA_REALM, SAMBA_DOMAIN, SAMBA_NETBIOS
 
 
@@ -23,6 +19,9 @@ app = typer.Typer()
     help="""Check as teacher connection with samba share and kerberos authentication."""
 )
 def check():
+    import pexpect
+    import smbclient
+    from pwinput import pwinput
 
     def p(*args, end="\n"):
         print("\033[1m\033[38;5;214m", *args, "\033[39m\033[0m", end=end)

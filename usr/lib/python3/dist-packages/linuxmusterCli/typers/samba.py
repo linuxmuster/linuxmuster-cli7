@@ -3,20 +3,20 @@ from typing_extensions import Annotated
 
 from rich.console import Console
 from rich.table import Table
-from linuxmusterTools.samba_util import GPOManager, smbstatus, SambaToolDNS
+from linuxmusterTools.samba_util import smbstatus, SambaToolDNS
 from linuxmusterTools.samba_util.log import last_login
 from .state import state
 from .format import printf
 
-
-gpomgr = GPOManager()
-GPOS = gpomgr.gpos
 
 console = Console(emoji=False)
 app = typer.Typer(help="Manage samba shares and connections.")
 
 @app.command(help="Display all GPOS details on the system.")
 def gpos():
+    from linuxmusterTools.samba_util import GPOManager
+    GPOS = GPOManager().gpos
+
     gpos = Table()
     gpos.add_column("Name", style="green")
     gpos.add_column("GPO", style="cyan")
@@ -34,6 +34,9 @@ def gpos():
 
 @app.command(help="Display all configured drives in linuxmuster.net for the specified school.")
 def drives(school: Annotated[str, typer.Option("--school", "-s")] = 'default-school'):
+    from linuxmusterTools.samba_util import GPOManager
+    GPOS = GPOManager().gpos
+
     drives = Table()
     drives.add_column("Name", style="green")
     drives.add_column("Letter", style="yellow")

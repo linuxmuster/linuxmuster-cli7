@@ -1,6 +1,7 @@
 import datetime
 from types import SimpleNamespace
 
+import linuxmusterTools.samba_util as samba_util
 from linuxmusterCli.typers import samba
 from linuxmusterCli.typers.state import state
 
@@ -34,9 +35,12 @@ class FakeSambaToolDNS:
 class TestGpos:
 
     def test_lists_gpo_details(self, runner, monkeypatch):
-        monkeypatch.setattr(samba, 'GPOS', {
+        # gpos()/drives() import and instantiate GPOManager locally (lazily)
+        # now, instead of reading a module-level samba.GPOS built at import
+        # time -- patch the class at its source instead.
+        monkeypatch.setattr(samba_util, 'GPOManager', lambda: SimpleNamespace(gpos={
             'somename': SimpleNamespace(gpo='{GUID}', path='\\\\host\\sysvol\\path'),
-        })
+        }))
 
         result = runner.invoke(samba.app, ['gpos'])
 
@@ -45,7 +49,7 @@ class TestGpos:
         assert '{GUID}' in result.output
 
     def test_empty_gpos_shows_empty_table(self, runner, monkeypatch):
-        monkeypatch.setattr(samba, 'GPOS', {})
+        monkeypatch.setattr(samba_util, 'GPOManager', lambda: SimpleNamespace(gpos={}))
 
         result = runner.invoke(samba.app, ['gpos'])
 
@@ -53,9 +57,9 @@ class TestGpos:
         assert 'Name' in result.output
 
     def test_raw_format_output(self, runner, monkeypatch):
-        monkeypatch.setattr(samba, 'GPOS', {
+        monkeypatch.setattr(samba_util, 'GPOManager', lambda: SimpleNamespace(gpos={
             'somename': SimpleNamespace(gpo='{GUID}', path='\\\\host\\sysvol'),
-        })
+        }))
         state.format = True
         state.raw = True
 
@@ -77,7 +81,7 @@ class TestDrives:
         }
 
     def test_lists_drives_for_default_school(self, runner, monkeypatch):
-        monkeypatch.setattr(samba, 'GPOS', self._fake_gpos())
+        monkeypatch.setattr(samba_util, 'GPOManager', lambda: SimpleNamespace(gpos=self._fake_gpos()))
 
         result = runner.invoke(samba.app, ['drives'])
 
@@ -86,7 +90,7 @@ class TestDrives:
         assert 'Home' in result.output
 
     def test_school_option_is_used_as_gpos_key(self, runner, monkeypatch):
-        monkeypatch.setattr(samba, 'GPOS', self._fake_gpos('other-school'))
+        monkeypatch.setattr(samba_util, 'GPOManager', lambda: SimpleNamespace(gpos=self._fake_gpos('other-school')))
 
         result = runner.invoke(samba.app, ['drives', '--school', 'other-school'])
 
@@ -96,7 +100,7 @@ class TestDrives:
     def test_unknown_school_raises_keyerror(self, runner, monkeypatch):
         # Documents current (buggy) behavior: an unknown/mismatched school
         # crashes with an uncaught KeyError instead of a friendly error message.
-        monkeypatch.setattr(samba, 'GPOS', self._fake_gpos('default-school'))
+        monkeypatch.setattr(samba_util, 'GPOManager', lambda: SimpleNamespace(gpos=self._fake_gpos('default-school')))
 
         result = runner.invoke(samba.app, ['drives', '--school', 'unknown-school'])
 
