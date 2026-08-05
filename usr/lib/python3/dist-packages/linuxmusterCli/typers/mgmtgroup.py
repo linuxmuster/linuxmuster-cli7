@@ -21,7 +21,7 @@ def manage(
         ):
 
 
-    if add_members is None and remove_members is None:
+    if not add_members and not remove_members:
         typer.secho("Please choose at least one of the option --add-members or --remove-members", fg=typer.colors.RED)
         sys.exit(0)
 

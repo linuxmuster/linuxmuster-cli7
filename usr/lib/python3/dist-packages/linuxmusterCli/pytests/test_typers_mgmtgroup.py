@@ -93,20 +93,11 @@ class TestManage:
         assert result.exit_code == 1
         assert 'Cannot remove from internet' in result.output
 
-    def test_no_options_given_does_nothing_current_buggy_behavior(self, runner, monkeypatch):
-        # CONFIRMED BUG (documented here, not fixed): the guard
-        # `if add_members is None and remove_members is None:` in mgmtgroup.py
-        # can never trigger because both options default to '' (empty string),
-        # not None. So calling `mgmtgroup manage <group>` with no options at
-        # all currently does nothing silently: exit_code 0, no output, and
-        # neither add_members() nor remove_members() is ever called -- even
-        # though GroupManager itself IS still instantiated.
+    def test_no_options_given_asks_for_one(self, runner, monkeypatch):
         monkeypatch.setattr(mgmtgroup, 'GroupManager', FakeGroupManager)
 
         result = runner.invoke(mgmtgroup.app, ['internet'])
 
         assert result.exit_code == 0
-        assert result.output == ''
-        assert len(FakeGroupManager.instances) == 1
-        assert FakeGroupManager.instances[0].added == []
-        assert FakeGroupManager.instances[0].removed == []
+        assert 'Please choose at least one of the option --add-members or --remove-members' in result.output
+        assert FakeGroupManager.instances == []
