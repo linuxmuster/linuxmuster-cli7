@@ -1,3 +1,29 @@
+linuxmuster-cli7 (7.4.5) lmn74; urgency=medium
+
+  * [lmngroup] Add new typer: ls, create, delete, legacy (list
+    sophomorix-groups not yet migrated to OU=LMNGroups) and migrate.
+  * [tests] Add a complete test suite for the up, user, userlog and users
+    typers (previously untested).
+  * Lazy-import Samba/smbclient bindings in the check_smbclient and samba
+    typers to optimize load time.
+  * Add a README for each typer.
+  * [quotas] Show a clear message instead of crashing with an
+    UnboundLocalError when ls() is called without --class or --teachers.
+  * [mgmtgroup] Fix manage() silently doing nothing when neither
+    --add-members nor --remove-members is given (the guard checked for
+    None, but both options default to an empty string).
+  * [printers] Show a printer as "Not registered" instead of silently
+    dropping it from the table when it has no matching ldap entry.
+  * [samba] Show a clear message instead of crashing with a KeyError when
+    drives() is called with an unknown --school.
+  * [linbo, schoolclass] Fix --school being accepted but never forwarded
+    to the underlying call in lastsync() and sync().
+  * [student] Fix manage() aborting the rest of an --add-parents/
+    --remove-parents list on the first failure; each parent is now handled
+    independently and failures no longer hide prior successes.
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Wed, 05 Aug 2026 16:00:00 +0200
+
 linuxmuster-cli7 (7.4.4) lmn74; urgency=medium
 
   * Fix dict parameter in students. Fix #5. 
