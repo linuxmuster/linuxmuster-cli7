@@ -50,7 +50,7 @@ def sync(
     try:
         for schoolclass in schoolclasses:
             lprint.lmn(f"lmncli: Checking groups of schoolclass {schoolclass} in {school}")
-            schoolclass_group = LMNSchoolclass(schoolclass)
+            schoolclass_group = LMNSchoolclass(schoolclass, school=school)
 
             if sync_teachers:
                 try:

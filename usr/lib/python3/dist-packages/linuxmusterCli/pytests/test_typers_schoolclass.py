@@ -86,6 +86,14 @@ class TestSync:
         assert not inst.teachers_group.filled
         assert not inst.parents_group.filled
 
+    def test_school_option_is_forwarded_to_lmnschoolclass(self, runner, monkeypatch):
+        monkeypatch.setattr(schoolclass, 'LMNSchoolclass', FakeLMNSchoolclass)
+
+        result = runner.invoke(schoolclass.app, ['sync', '--schoolclass', 'a', '--students', '--school', 'other-school'])
+
+        assert result.exit_code == 0
+        assert FakeLMNSchoolclass.instances[0].school == 'other-school'
+
     def test_sync_all_forces_all_flags_and_excludes_attic(self, runner, monkeypatch):
         monkeypatch.setattr(schoolclass, 'LMNSchoolclass', FakeLMNSchoolclass)
         monkeypatch.setattr(schoolclass.lr, 'getval', lambda url, attr: ['7a', '8b', 'attic'])

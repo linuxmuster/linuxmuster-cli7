@@ -202,7 +202,7 @@ class TestLastsync:
     def test_group_argument_is_forwarded_as_a_filter_list(self, runner, monkeypatch):
         seen = {}
 
-        def fake_list_workstations(groups=None):
+        def fake_list_workstations(groups=None, **kwargs):
             seen['groups'] = groups
             return self._devices()
 
@@ -225,12 +225,10 @@ class TestLastsync:
 
         runner.invoke(linbo.app, ['lastsync'])
 
-        assert seen['kwargs'] == {}
+        assert 'groups' not in seen['kwargs']
+        assert seen['kwargs']['school'] == 'default-school'
 
-    def test_school_option_is_accepted_but_not_forwarded_anywhere(self, runner, monkeypatch):
-        # Documents current (buggy?) behavior: --school is a declared option on
-        # lastsync but the function body never references it, so it has no
-        # effect on the list_workstations() call or anything else.
+    def test_school_option_is_forwarded_to_list_workstations(self, runner, monkeypatch):
         seen = {}
 
         def fake_list_workstations(**kwargs):
@@ -243,7 +241,7 @@ class TestLastsync:
         result = runner.invoke(linbo.app, ['lastsync', 'win10', '--school', 'other-school'])
 
         assert result.exit_code == 0
-        assert seen['kwargs'] == {'groups': ['win10']}
+        assert seen['kwargs'] == {'school': 'other-school', 'groups': ['win10']}
 
     def test_raw_format_prints_unformatted_sync_dict(self, runner, monkeypatch):
         devices = self._devices()

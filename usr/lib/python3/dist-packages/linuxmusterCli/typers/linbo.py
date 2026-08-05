@@ -98,9 +98,9 @@ def lastsync(
         return f'[{color}]{date}[/{color}]'
 
     if group:
-        devices = list_workstations(groups=[group])
+        devices = list_workstations(school=school, groups=[group])
     else:
-        devices = list_workstations()
+        devices = list_workstations(school=school)
 
     last_sync_all(devices)
 
