@@ -6,7 +6,7 @@ from rich.table import Table
 from linuxmusterTools.samba_util import smbstatus, SambaToolDNS
 from linuxmusterTools.samba_util.log import last_login
 from .state import state
-from .format import printf
+from .format import printf, error
 
 
 console = Console(emoji=False)
@@ -46,8 +46,13 @@ def drives(school: Annotated[str, typer.Option("--school", "-s")] = 'default-sch
     # drives.add_column("Visible teachers", style="bright_magenta")
     # drives.add_column("Visible students", style="bright_magenta")
 
+    gpo_key = f"sophomorix:school:{school}"
+    if gpo_key not in GPOS:
+        error(f"No GPO found for school '{school}'.")
+        raise typer.Exit()
+
     data = [[c.header for c in drives.columns]]
-    for drive in GPOS[f"sophomorix:school:{school}"].drivemgr.drives:
+    for drive in GPOS[gpo_key].drivemgr.drives:
         drives.add_row(
                 drive.id, 
                 drive.letter, 

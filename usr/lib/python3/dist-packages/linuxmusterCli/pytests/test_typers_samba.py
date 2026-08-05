@@ -97,15 +97,14 @@ class TestDrives:
         assert result.exit_code == 0
         assert 'H:' in result.output
 
-    def test_unknown_school_raises_keyerror(self, runner, monkeypatch):
-        # Documents current (buggy) behavior: an unknown/mismatched school
-        # crashes with an uncaught KeyError instead of a friendly error message.
+    def test_unknown_school_shows_clear_error(self, runner, monkeypatch):
         monkeypatch.setattr(samba_util, 'GPOManager', lambda: SimpleNamespace(gpos=self._fake_gpos('default-school')))
 
         result = runner.invoke(samba.app, ['drives', '--school', 'unknown-school'])
 
-        assert result.exit_code == 1
-        assert isinstance(result.exception, KeyError)
+        assert result.exit_code == 0
+        assert result.exception is None
+        assert "No GPO found for school 'unknown-school'" in result.output
 
 
 class TestStatus:
