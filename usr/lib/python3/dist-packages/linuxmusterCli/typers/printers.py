@@ -88,6 +88,25 @@ def ls(
                     ldap_device['sophomorixJoinable'],
                 ])
                 break
+        else:
+            printers.add_row(
+                device['room'],
+                device['hostname'],
+                device['ip'],
+                '',
+                '',
+                "Not registered",
+                "Not registered",
+            )
+            output.append([
+                device['room'],
+                device['hostname'],
+                device['ip'],
+                '',
+                '',
+                "Not registered",
+                "Not registered",
+            ])
 
     if state.format:
         printf.format(output)

@@ -86,14 +86,12 @@ class TestLs:
         assert 'pc5' in result.output
         assert 'BADDN' not in result.output
 
-    def test_printer_without_ldap_match_is_silently_dropped_from_table(self, runner, monkeypatch):
+    def test_printer_without_ldap_match_shows_not_registered(self, runner, monkeypatch):
         """
-        Documents current (buggy) behaviour: unlike devices.py, printers.py has no
-        `else` clause on the inner ldap-matching loop, so a printer present in the
-        csv but absent from ldap is never added as a table row at all -- it does
-        not even show up as "Not registered". The title count (based on the csv
-        data alone) still includes it, so the displayed row count is inconsistent
-        with the table body.
+        printer4 is present in the csv but has no matching ldap entry. Like
+        devices.py's `for...else`, it must still show up as a row (status
+        "Not registered") instead of silently disappearing from the table
+        while still being counted in the title.
         """
         monkeypatch.setattr(printers, 'LMNFile', FakeLMNFile)
         monkeypatch.setattr(printers.lr, 'get', lambda url, **kw: list(SAMPLE_LDAP_PRINTERS))
@@ -101,7 +99,9 @@ class TestLs:
         result = runner.invoke(printers.app, [])
 
         assert '3 printer(s)' in result.output
-        assert 'printer4' not in result.output
+        assert 'printer4' in result.output
+        assert 'Not' in result.output
+        assert 'registered' in result.output
 
     def test_hidden_and_joinable_columns_are_rendered(self, runner, monkeypatch):
         monkeypatch.setattr(printers, 'LMNFile', FakeLMNFile)
