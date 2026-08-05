@@ -19,16 +19,11 @@ class TestValidation:
         assert result.exit_code == 0
         assert 'mutually exclusives' in result.output
 
-    def test_no_option_given_raises_unbound_local_error(self, runner, monkeypatch):
-        # BUG: neither --class nor --teachers given leaves `title_suffix` (and
-        # `users`) unassigned, and the Table(title=...) f-string on the next
-        # line blows up with UnboundLocalError. Documenting current behavior,
-        # not fixing it.
+    def test_no_option_given_asks_for_one(self, runner, monkeypatch):
         result = runner.invoke(quotas.app, [])
 
-        assert result.exit_code != 0
-        assert isinstance(result.exception, UnboundLocalError)
-        assert 'title_suffix' in str(result.exception)
+        assert result.exit_code == 0
+        assert 'Please provide either --class or --teachers' in result.output
 
 
 class TestLs:

@@ -18,6 +18,8 @@ app = typer.Typer()
     help="""Display quotas of users."""
 )
 def ls(
+        # TODO: add multischool support (this option is not wired up yet, `school` is
+        # hardcoded to 'default-school' below).
         #school: Annotated[str, typer.Option("--school", "-s", help="Select the users from a specific school.")] = 'default-school',
         schoolclass: Annotated[str, typer.Option("--class", "-c", help="Only show the students of the specified schoolclass.")] = '',
         teachers: Annotated[bool, typer.Option("--teachers", "-t", help="Only show the teachers.")] = False,
@@ -25,7 +27,6 @@ def ls(
         ):
 
 
-    # Seems to be a TODO
     if schoolclass and teachers:
         error("Options --schoolclass and --teachers are mutually exclusives! Please pick only one of them.")
         raise typer.Exit()
@@ -37,6 +38,9 @@ def ls(
     elif schoolclass:
         title_suffix = f"of schoolclass {schoolclass}"
         users = lr.getval(f'/schoolclasses/{schoolclass}', 'sophomorixMembers')
+    else:
+        error("Please provide either --class or --teachers.")
+        raise typer.Exit()
 
     table_quotas = Table(title=f"Quotas {title_suffix}")
     table_quotas.add_column("User", style="cyan")
