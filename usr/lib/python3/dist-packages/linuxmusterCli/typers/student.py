@@ -33,21 +33,27 @@ def manage(
 
     if add_parents:
         get_parents = True
-        try:
-            for parent in add_parents.split(','):
+        added = []
+        for parent in add_parents.split(','):
+            try:
                 student.add_parent(parent)
-            typer.secho(f"Parents {add_parents} added!\n", fg=typer.colors.GREEN)
-        except Exception as e:
-            typer.secho(str(e), fg=typer.colors.RED)
+                added.append(parent)
+            except Exception as e:
+                typer.secho(str(e), fg=typer.colors.RED)
+        if added:
+            typer.secho(f"Parents {','.join(added)} added!\n", fg=typer.colors.GREEN)
 
     if remove_parents:
         get_parents = True
-        try:
-            for parent in remove_parents.split(','):
+        removed = []
+        for parent in remove_parents.split(','):
+            try:
                 student.remove_parent(parent)
-            typer.secho(f"Parents {remove_parents} removed!\n", fg=typer.colors.GREEN)
-        except Exception as e:
-            typer.secho(str(e), fg=typer.colors.RED)
+                removed.append(parent)
+            except Exception as e:
+                typer.secho(str(e), fg=typer.colors.RED)
+        if removed:
+            typer.secho(f"Parents {','.join(removed)} removed!\n", fg=typer.colors.GREEN)
 
     if get_parents:
         if student.parents:

@@ -76,20 +76,27 @@ class TestManage:
         # get_parents was never explicitly requested but is implied by add/remove:
         assert 'No parent found!' in result.output
 
-    def test_add_parent_failure_aborts_the_rest_of_the_loop(self, runner, monkeypatch):
-        # BUG-like current behavior (documented, not fixed): the try/except in
-        # student.py wraps the WHOLE for-loop, not each iteration. So a single
-        # failing add_parent() call aborts processing of any parents after it
-        # in the same --add-parents list.
+    def test_add_parent_failure_does_not_abort_the_rest_of_the_loop(self, runner, monkeypatch):
+        # Each parent is now tried independently: a failing add_parent() call
+        # is reported but does not stop the remaining parents in the same
+        # --add-parents list from being processed.
         monkeypatch.setattr(student, 'LMNStudent', FakeStudent)
 
         result = runner.invoke(student.app, ['--add-parents', 'good1,bad,good2', 'johndoe'])
 
         assert result.exit_code == 0
         assert 'cannot add bad' in result.output
-        # "Parents ... added!" success message is never printed since the
-        # exception happened inside the try, before reaching typer.secho(...).
-        assert 'added!' not in result.output
+        # Only the parents that actually succeeded are listed.
+        assert 'Parents good1,good2 added!' in result.output
+
+    def test_remove_parent_failure_does_not_abort_the_rest_of_the_loop(self, runner, monkeypatch):
+        monkeypatch.setattr(student, 'LMNStudent', FakeStudent)
+
+        result = runner.invoke(student.app, ['--remove-parents', 'good1,bad,good2', 'johndoe'])
+
+        assert result.exit_code == 0
+        assert 'cannot remove bad' in result.output
+        assert 'Parents good1,good2 removed!' in result.output
 
     def test_get_parents_shows_table(self, runner, monkeypatch):
         class FakeStudentWithParents(FakeStudent):
