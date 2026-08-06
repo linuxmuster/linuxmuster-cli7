@@ -15,6 +15,7 @@ Actually, followings commands are available (add `--help` to display all options
  * `lmncli samba status` : Display all current samba connections.
  * `lmncli up GROUP` : Check if the clients are online. Specify GROUP to filter the results.
  * `lmncli user USER` : Show details of user USER.
+ * `lmncli passwd USER` : Set or reset user USER's first (initial) and/or current login password.
  * `lmncli users FILTER_STR` : List all users which name, login or role containing FILTER_STR. Give all users if FILTER_STR is empty.
 
 ## Maintenance Details
