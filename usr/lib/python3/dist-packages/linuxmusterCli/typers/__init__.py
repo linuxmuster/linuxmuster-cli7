@@ -2,6 +2,7 @@ from .samba import *
 from .linbo import *
 from .users import *
 from .user import *
+from .passwd import *
 from .devices import *
 from .up import *
 from .check_attic import *

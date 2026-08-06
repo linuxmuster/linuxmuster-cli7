@@ -17,6 +17,7 @@ from typers import (
     users,
     up,
     user,
+    passwd,
     check_attic,
     userlog,
     check_parents,
@@ -73,6 +74,7 @@ app.add_typer(linbo.app, name='linbo')
 app.add_typer(devices.app, name='devices')
 app.add_typer(users.app, name='users')
 app.add_typer(user.app, name='user')
+app.add_typer(passwd.app, name='passwd')
 app.add_typer(up.app, name='up')
 app.add_typer(check_attic.app, name='check_attic')
 app.add_typer(check_parents.app, name='check_parents')
