@@ -154,18 +154,16 @@ class TestLastsync:
                 'hosts': [
                     {
                         'hostname': 'pc01', 'ip': '10.0.0.1',
-                        'images': ['win10.image'],
-                        'sync': {'win10.image': {'date': 1700000000, 'status': 'success'}},
+                        'image': [{'image': 'win10.image', 'date': 1700000000, 'status': 'success'}],
                     },
                     {
                         'hostname': 'pc02', 'ip': '10.0.0.2',
-                        'images': ['win10.image'],
-                        'sync': {'win10.image': {'date': 'Never', 'status': 'success'}},
+                        'image': [{'image': 'win10.image', 'date': 'Never', 'status': 'success'}],
                     },
                 ]
             },
             'empty-group': {'hosts': []},
-            'no-images-group': {'hosts': [{'hostname': 'pc99', 'ip': '10.0.0.9', 'images': [], 'sync': {}}]},
+            'no-images-group': {'hosts': [{'hostname': 'pc99', 'ip': '10.0.0.9', 'image': []}]},
         }
 
     def test_groups_with_no_hosts_or_no_images_are_skipped(self, runner, monkeypatch):
@@ -254,5 +252,5 @@ class TestLastsync:
 
         assert result.exit_code == 0
         # Raw output uses the unformatted sync dict, not the colored/rendered string.
-        assert "{'date': 1700000000, 'status': 'success'}" in result.output
+        assert "{'image': 'win10.image', 'date': 1700000000, 'status': 'success'}" in result.output
         assert 'No date found' not in result.output

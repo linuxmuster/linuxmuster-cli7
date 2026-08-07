@@ -107,7 +107,7 @@ def lastsync(
     for grp, hosts in devices.items():
         images = []
         if len(hosts['hosts']) > 0:
-            images = hosts['hosts'][0]['images']
+            images = [d['image'] for d in hosts['hosts'][0]['image']]
         if not images:
             continue
 
@@ -120,15 +120,16 @@ def lastsync(
             data[0].append(f'Last synchronisation for {image}')
 
         for host in hosts['hosts']:
+            sync_by_image = {d['image']: d for d in host['image']}
             sync.add_row(
                 host['hostname'],
                 host['ip'],
-                *[format(host['sync'][image]) for image in images]
+                *[format(sync_by_image[image]) for image in images]
             )
             data.append([
                 host['hostname'],
                 host['ip'],
-                *[host['sync'][image] for image in images]
+                *[sync_by_image[image] for image in images]
             ])
 
         if state.format:
