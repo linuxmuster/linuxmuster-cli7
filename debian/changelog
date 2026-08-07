@@ -1,3 +1,17 @@
+linuxmuster-cli7 (7.4.6) lmn74; urgency=medium
+
+  * [passwd] New typer: "lmncli passwd <user>" manages a user's first
+    (initial) and current login password - set-first-password,
+    set-current-password, set-random-password, reset-first-password and
+    check-first-pw. Brings parity with the webui/lmnapi password
+    management.
+  * [tests] Add coverage for the new passwd typer.
+  * [linbo] Adapt "lmncli linbo lastsync" to lmntools' last_sync_all() new
+    return shape (host['image'] list of {date, status, image} instead of
+    separate host['images']/host['sync']).
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Fri, 07 Aug 2026 15:45:00 +0200
+
 linuxmuster-cli7 (7.4.5) lmn74; urgency=medium
 
   * [lmngroup] Add new typer: ls, create, delete, legacy (list
