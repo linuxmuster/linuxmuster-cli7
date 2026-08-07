@@ -1,9 +1,12 @@
+import sys
+
 import typer
 from typing_extensions import Annotated
 
 from rich.console import Console
 from rich.table import Table
-from linuxmusterTools.ldapconnector import LMNLdapReader as lr, LMNMgmtGroup
+from linuxmusterTools.ldapconnector import LMNLdapReader as lr
+from linuxmusterTools.samba_util import GroupManager
 from linuxmusterTools.common import Spinner, SHELL_COLOR_INFO
 
 
@@ -29,12 +32,26 @@ def reset_internet(
     else:
         students = lr.get('/rawroles/student', school=school, as_dict=False)
 
-    internet_group = LMNMgmtGroup('internet')
+    to_add = [student.cn for student in students if not student.internet]
+
+    if not to_add:
+        console.print("No student needs their internet access reset.")
+        return
+
+    groupmanager = GroupManager(school=school)
+    failures = []
 
     with Spinner() as s:
-        total = len(students)
-        for idx, student in enumerate(students):
-            s.print(f"[{idx + 1}/{total}] Updating internet membership of {student.cn}")
-            if not student.internet:
-                internet_group.add_member(student.cn)
+        total = len(to_add)
+        for idx, cn in enumerate(to_add):
+            s.print(f"[{idx + 1}/{total}] Updating internet membership of {cn}")
+            try:
+                groupmanager.add_members('internet', [cn])
+            except Exception as e:
+                failures.append((cn, str(e)))
+
+    if failures:
+        for cn, error in failures:
+            console.print(f"Could not update {cn}: {error}", style="red")
+        sys.exit(1)
 

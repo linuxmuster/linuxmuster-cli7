@@ -23,18 +23,25 @@ class FakeStudentEntry:
         self.sophomorixAdminClass = sophomorixAdminClass
 
 
-class FakeMgmtGroup:
-    """Stand-in for linuxmusterTools.ldapconnector.LMNMgmtGroup, tracked per instance."""
+class FakeGroupManager:
+    """Stand-in for linuxmusterTools.samba_util.GroupManager, tracked per instance."""
 
     instances = []
+    raise_on_add = None
+    fail_for = frozenset()
 
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, school='default-school'):
+        self.school = school
         self.added = []
-        FakeMgmtGroup.instances.append(self)
+        FakeGroupManager.instances.append(self)
 
-    def add_member(self, cn):
-        self.added.append(cn)
+    def add_members(self, group, members):
+        if FakeGroupManager.raise_on_add:
+            raise FakeGroupManager.raise_on_add
+        if any(m in FakeGroupManager.fail_for for m in members):
+            raise Exception(f"unknown user in {members}")
+        self.group = group
+        self.added.extend(members)
 
 
 class TestResetInternet:
@@ -49,11 +56,13 @@ class TestResetInternet:
     """
 
     def setup_method(self):
-        FakeMgmtGroup.instances = []
+        FakeGroupManager.instances = []
+        FakeGroupManager.raise_on_add = None
+        FakeGroupManager.fail_for = frozenset()
 
     def test_only_students_without_internet_are_added(self, runner, monkeypatch):
         monkeypatch.setattr(students, 'Spinner', FakeSpinner)
-        monkeypatch.setattr(students, 'LMNMgmtGroup', FakeMgmtGroup)
+        monkeypatch.setattr(students, 'GroupManager', FakeGroupManager)
         monkeypatch.setattr(
             students.lr, 'get',
             lambda url, **kw: [
@@ -66,11 +75,11 @@ class TestResetInternet:
         result = runner.invoke(students.app, [])
 
         assert result.exit_code == 0
-        assert FakeMgmtGroup.instances[0].added == ['nointernet1', 'nointernet2']
+        assert FakeGroupManager.instances[0].added == ['nointernet1', 'nointernet2']
 
     def test_student_with_internet_is_never_added(self, runner, monkeypatch):
         monkeypatch.setattr(students, 'Spinner', FakeSpinner)
-        monkeypatch.setattr(students, 'LMNMgmtGroup', FakeMgmtGroup)
+        monkeypatch.setattr(students, 'GroupManager', FakeGroupManager)
         monkeypatch.setattr(
             students.lr, 'get',
             lambda url, **kw: [FakeStudentEntry('hasinternet', True)],
@@ -79,11 +88,13 @@ class TestResetInternet:
         result = runner.invoke(students.app, [])
 
         assert result.exit_code == 0
-        assert FakeMgmtGroup.instances[0].added == []
+        # Nobody needs adding: GroupManager isn't even instantiated.
+        assert FakeGroupManager.instances == []
+        assert 'No student needs their internet access reset' in result.output
 
     def test_schoolclass_option_filters_students(self, runner, monkeypatch):
         monkeypatch.setattr(students, 'Spinner', FakeSpinner)
-        monkeypatch.setattr(students, 'LMNMgmtGroup', FakeMgmtGroup)
+        monkeypatch.setattr(students, 'GroupManager', FakeGroupManager)
         monkeypatch.setattr(
             students.lr, 'get',
             lambda url, **kw: [
@@ -96,11 +107,11 @@ class TestResetInternet:
         result = runner.invoke(students.app, ['--schoolclass', '7a'])
 
         assert result.exit_code == 0
-        assert FakeMgmtGroup.instances[0].added == ['a', 'c']
+        assert FakeGroupManager.instances[0].added == ['a', 'c']
 
     def test_schoolclass_option_accepts_comma_separated_list(self, runner, monkeypatch):
         monkeypatch.setattr(students, 'Spinner', FakeSpinner)
-        monkeypatch.setattr(students, 'LMNMgmtGroup', FakeMgmtGroup)
+        monkeypatch.setattr(students, 'GroupManager', FakeGroupManager)
         monkeypatch.setattr(
             students.lr, 'get',
             lambda url, **kw: [
@@ -113,11 +124,11 @@ class TestResetInternet:
         result = runner.invoke(students.app, ['--schoolclass', '7a,8b'])
 
         assert result.exit_code == 0
-        assert FakeMgmtGroup.instances[0].added == ['a', 'b']
+        assert FakeGroupManager.instances[0].added == ['a', 'b']
 
     def test_school_option_is_forwarded(self, runner, monkeypatch):
         monkeypatch.setattr(students, 'Spinner', FakeSpinner)
-        monkeypatch.setattr(students, 'LMNMgmtGroup', FakeMgmtGroup)
+        monkeypatch.setattr(students, 'GroupManager', FakeGroupManager)
         seen = {}
 
         def fake_get(url, school='default-school', **kw):
@@ -129,3 +140,34 @@ class TestResetInternet:
         runner.invoke(students.app, ['--school', 'other-school'])
 
         assert seen['school'] == 'other-school'
+
+    def test_group_manager_error_aborts_with_nonzero_exit(self, runner, monkeypatch):
+        monkeypatch.setattr(students, 'Spinner', FakeSpinner)
+        monkeypatch.setattr(students, 'GroupManager', FakeGroupManager)
+        FakeGroupManager.raise_on_add = Exception("group internet not found")
+        monkeypatch.setattr(
+            students.lr, 'get',
+            lambda url, **kw: [FakeStudentEntry('nointernet1', False)],
+        )
+
+        result = runner.invoke(students.app, [])
+
+        assert result.exit_code != 0
+
+    def test_one_failing_student_does_not_stop_the_others(self, runner, monkeypatch):
+        monkeypatch.setattr(students, 'Spinner', FakeSpinner)
+        monkeypatch.setattr(students, 'GroupManager', FakeGroupManager)
+        FakeGroupManager.fail_for = frozenset({'broken'})
+        monkeypatch.setattr(
+            students.lr, 'get',
+            lambda url, **kw: [
+                FakeStudentEntry('nointernet1', False),
+                FakeStudentEntry('broken', False),
+                FakeStudentEntry('nointernet2', False),
+            ],
+        )
+
+        result = runner.invoke(students.app, [])
+
+        assert result.exit_code != 0
+        assert FakeGroupManager.instances[0].added == ['nointernet1', 'nointernet2']
