@@ -1,3 +1,14 @@
+linuxmuster-cli7 (7.4.7) lmn74; urgency=medium
+
+  * [students] "lmncli students reset-internet" now uses
+    samba_util.GroupManager instead of the deprecated LMNMgmtGroup: only
+    students actually missing internet access are updated (skip is now
+    explicit, not implicit), and a failure on one student no longer
+    aborts silently - all failures are collected and reported at the
+    end, with a non-zero exit code.
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Fri, 07 Aug 2026 17:00:00 +0200
+
 linuxmuster-cli7 (7.4.6) lmn74; urgency=medium
 
   * [passwd] New typer: "lmncli passwd <user>" manages a user's first
