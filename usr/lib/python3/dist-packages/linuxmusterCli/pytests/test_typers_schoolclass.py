@@ -46,7 +46,7 @@ class TestSync:
         result = runner.invoke(schoolclass.app, ['sync'])
 
         assert result.exit_code == 0
-        assert 'Please select at least a schoolclass or the option --sync-all' in result.output
+        assert 'Please select at least a schoolclass or the option --all' in result.output
         assert FakeLMNSchoolclass.instances == []
 
     def test_explicit_schoolclass_without_any_sync_flag_also_exits_zero(self, runner, monkeypatch):
@@ -107,18 +107,16 @@ class TestSync:
             assert inst.parents_group.filled
             assert inst.students_group.filled
 
-    def test_sync_all_crashes_uncaught_if_attic_missing_from_list(self, runner, monkeypatch):
-        # BUG (documented, not fixed): sync_all does `schoolclasses.remove('attic')`
-        # unconditionally. If the LDAP result doesn't contain an 'attic' schoolclass,
-        # this raises an uncaught ValueError before any schoolclass is processed.
+    def test_sync_all_without_attic_in_list_syncs_everything(self, runner, monkeypatch):
+        # 'attic' is not a real schoolclass and may be missing from the LDAP result:
+        # its removal must stay optional instead of raising ValueError.
         monkeypatch.setattr(schoolclass, 'LMNSchoolclass', FakeLMNSchoolclass)
         monkeypatch.setattr(schoolclass.lr, 'getval', lambda url, attr: ['7a', '8b'])
 
         result = runner.invoke(schoolclass.app, ['sync', '--all'])
 
-        assert result.exit_code == 1
-        assert isinstance(result.exception, ValueError)
-        assert FakeLMNSchoolclass.instances == []
+        assert result.exit_code == 0
+        assert [i.cn for i in FakeLMNSchoolclass.instances] == ['7a', '8b']
 
     def test_fill_members_exception_aborts_immediately(self, runner, monkeypatch):
         # Each fill_members() call is wrapped in its own try/except that does

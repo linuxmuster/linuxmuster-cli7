@@ -28,13 +28,14 @@ def sync(
 
 
     if not sync_all and not schoolclass:
-        typer.secho("Please select at least a schoolclass or the option --sync-all", fg=typer.colors.RED)
+        typer.secho("Please select at least a schoolclass or the option --all", fg=typer.colors.RED)
         return
 
     if sync_all:
         sync_teachers, sync_students, sync_parents = True, True, True
         schoolclasses = lr.getval('/schoolclasses','cn')
-        schoolclasses.remove('attic')
+        if 'attic' in schoolclasses:
+            schoolclasses.remove('attic')
     else:
 
         schoolclasses = schoolclass.split(',')
@@ -44,7 +45,7 @@ def sync(
         sync_parents = True if sync_parents or sync_groups else False
 
         if not (sync_parents or sync_teachers or sync_students):
-            typer.secho("Please choose at least one of the option --sync-teachers, --sync-parents or --sync-students", fg=typer.colors.RED)
+            typer.secho("Please choose at least one of the option --teachers, --parents or --students", fg=typer.colors.RED)
             sys.exit(0)
 
     try:
