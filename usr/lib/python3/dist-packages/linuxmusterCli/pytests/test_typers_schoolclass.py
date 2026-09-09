@@ -246,12 +246,16 @@ class TestSync:
 
 SCHOOLCLASS_DATA = {
     '7a': {
-        'cn': '7a', 'sophomorixAdmins': ['teacher1'],
+        'cn': '7a', 'dn': sc('7a')['dn'], 'sophomorixAdmins': ['teacher1'],
         'sophomorixHidden': False, 'sophomorixJoinable': True,
     },
     '8b': {
-        'cn': '8b', 'sophomorixAdmins': ['teacher1', 'teacher2'],
+        'cn': '8b', 'dn': sc('8b')['dn'], 'sophomorixAdmins': ['teacher1', 'teacher2'],
         'sophomorixHidden': True, 'sophomorixJoinable': False,
+    },
+    'attic': {
+        'cn': 'attic', 'dn': sc('attic')['dn'], 'sophomorixAdmins': ['teacher1'],
+        'sophomorixHidden': False, 'sophomorixJoinable': False,
     },
 }
 
@@ -281,6 +285,37 @@ def make_fake_get(calls=None):
 
 
 class TestTeachers:
+
+    @pytest.fixture(autouse=True)
+    def _schools(self, monkeypatch):
+        # teachers() validates its --school against ldap before doing anything
+        monkeypatch.setattr(schoolclass, 'valid_schools', lambda: list(SCHOOLS))
+        monkeypatch.setattr(schoolclass, 'is_valid_school', lambda school: school in SCHOOLS)
+
+    def test_attic_is_not_listed(self, runner, monkeypatch):
+        monkeypatch.setattr(schoolclass.lr, 'get', make_fake_get())
+
+        result = runner.invoke(schoolclass.app, ['teachers'])
+
+        assert result.exit_code == 0
+        assert 'attic' not in result.output
+
+    def test_attic_is_still_shown_when_explicitly_requested(self, runner, monkeypatch):
+        # -c targets a precise schoolclass: an admin asking for the attic gets it
+        monkeypatch.setattr(schoolclass.lr, 'get', make_fake_get())
+
+        result = runner.invoke(schoolclass.app, ['teachers', '--schoolclass', 'attic'])
+
+        assert result.exit_code == 0
+        assert 'attic' in result.output
+
+    def test_unknown_school_exits_with_error(self, runner, monkeypatch):
+        monkeypatch.setattr(schoolclass.lr, 'get', make_fake_get())
+
+        result = runner.invoke(schoolclass.app, ['teachers', '--school', 'nonexistent'])
+
+        assert result.exit_code == 1
+        assert 'Unknown school nonexistent' in result.output
 
     def test_no_schoolclass_lists_all_with_teacher_names(self, runner, monkeypatch):
         monkeypatch.setattr(schoolclass.lr, 'get', make_fake_get())

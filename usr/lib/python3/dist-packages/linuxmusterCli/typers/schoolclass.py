@@ -10,11 +10,13 @@ from linuxmusterTools.common import lprint
 from linuxmusterTools.ldapconnector import LMNLdapReader as lr, LMNSchoolclass
 from linuxmusterTools.ldapconnector.checks import is_valid_school, valid_schools
 from .state import state
-from .format import printf, outformat, sort_schoolclasses
+from .format import printf, outformat, sort_schoolclasses, error
 
 
 console = Console(emoji=False)
 app = typer.Typer()
+
+ATTIC_OU = ',OU=attic,'
 
 @app.command(help="""Manage schoolclasses' groups.""")
 def sync(
@@ -33,21 +35,15 @@ def sync(
         return
 
     if not is_valid_school(school):
-        typer.secho(
-            f"Unknown school {school}. Available schools: {', '.join(valid_schools())}",
-            fg=typer.colors.RED
-        )
-        sys.exit(1)
+        error(f"Unknown school {school}. Available schools: {', '.join(valid_schools())}")
+        raise typer.Exit(code=1)
 
     if sync_all:
         sync_teachers, sync_students, sync_parents = True, True, True
-        # The attic is an adminclass too, but has no students/teachers/parents
-        # subgroups to maintain. Filtering on the dn and not on the cn, which
-        # is prefixed with the school name in a multischool setup.
         schoolclasses = [
             c['cn']
             for c in lr.getvalues('/schoolclasses', ['cn', 'dn'], school=school)
-            if ',OU=attic,' not in c['dn']
+            if ATTIC_OU not in c['dn']
         ]
     else:
 
@@ -75,7 +71,7 @@ def sync(
             schoolclass_group = LMNSchoolclass(schoolclass, school=school)
         except Exception as e:
             # Keep syncing the other schoolclasses, and report at the end
-            typer.secho(f"\t--> {str(e)}", fg=typer.colors.RED)
+            error(f"\t--> {str(e)}")
             failures.append(schoolclass)
             continue
 
@@ -88,12 +84,12 @@ def sync(
                 getattr(schoolclass_group, f'{group_type}_group').fill_members()
                 lprint.lmn(f"\t--> {group_type} group ✅")
             except Exception as e:
-                typer.secho(f"\t--> {group_type} group ❌ {str(e)}", fg=typer.colors.RED)
+                error(f"\t--> {group_type} group ❌ {str(e)}")
                 failures.append(f"{schoolclass}-{group_type}")
 
     if failures:
-        typer.secho(f"Could not sync: {', '.join(failures)}", fg=typer.colors.RED)
-        sys.exit(1)
+        error(f"Could not sync: {', '.join(failures)}")
+        raise typer.Exit(code=1)
 
 @app.command(help="""Print schoolclasses teacher's memberships.""")
 def teachers(
@@ -101,8 +97,15 @@ def teachers(
     school: Annotated[str, typer.Option("--school", "-s")] = 'default-school',
     ):
 
+    if not is_valid_school(school):
+        error(f"Unknown school {school}. Available schools: {', '.join(valid_schools())}")
+        raise typer.Exit(code=1)
+
     if not schoolclass:
-        schoolclasses = lr.get('/schoolclasses', school=school)
+        schoolclasses = [
+            c for c in lr.get('/schoolclasses', school=school)
+            if ATTIC_OU not in c['dn']
+        ]
     else:
         schoolclasses = []
         for c in schoolclass.split(','):
