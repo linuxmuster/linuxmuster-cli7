@@ -41,9 +41,14 @@ def sync(
 
     if sync_all:
         sync_teachers, sync_students, sync_parents = True, True, True
-        schoolclasses = lr.getval('/schoolclasses', 'cn', school=school)
-        if 'attic' in schoolclasses:
-            schoolclasses.remove('attic')
+        # The attic is an adminclass too, but has no students/teachers/parents
+        # subgroups to maintain. Filtering on the dn and not on the cn, which
+        # is prefixed with the school name in a multischool setup.
+        schoolclasses = [
+            c['cn']
+            for c in lr.getvalues('/schoolclasses', ['cn', 'dn'], school=school)
+            if ',OU=attic,' not in c['dn']
+        ]
     else:
 
         schoolclasses = schoolclass.split(',')

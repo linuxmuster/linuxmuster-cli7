@@ -37,6 +37,15 @@ class FakeLMNSchoolclass:
 SCHOOLS = ['default-school', 'other-school']
 
 
+def sc(cn, ou=None, school='default-school'):
+    """Build a {'cn', 'dn'} entry as returned by lr.getvalues('/schoolclasses')."""
+    ou = ou if ou is not None else cn
+    return {
+        'cn': cn,
+        'dn': f'CN={cn},OU={ou},OU=Students,OU={school},OU=SCHOOLS,DC=linuxmuster,DC=lan',
+    }
+
+
 class TestSync:
 
     def setup_method(self):
@@ -107,7 +116,8 @@ class TestSync:
 
     def test_sync_all_forces_all_flags_and_excludes_attic(self, runner, monkeypatch):
         monkeypatch.setattr(schoolclass, 'LMNSchoolclass', FakeLMNSchoolclass)
-        monkeypatch.setattr(schoolclass.lr, 'getval', lambda url, attr, **kw: ['7a', '8b', 'attic'])
+        monkeypatch.setattr(schoolclass.lr, 'getvalues',
+            lambda url, attrs, **kw: [sc('7a'), sc('8b'), sc('attic')])
 
         result = runner.invoke(schoolclass.app, ['sync', '--all'])
 
@@ -122,29 +132,44 @@ class TestSync:
         # 'attic' is not a real schoolclass and may be missing from the LDAP result:
         # its removal must stay optional instead of raising ValueError.
         monkeypatch.setattr(schoolclass, 'LMNSchoolclass', FakeLMNSchoolclass)
-        monkeypatch.setattr(schoolclass.lr, 'getval', lambda url, attr, **kw: ['7a', '8b'])
+        monkeypatch.setattr(schoolclass.lr, 'getvalues',
+            lambda url, attrs, **kw: [sc('7a'), sc('8b')])
 
         result = runner.invoke(schoolclass.app, ['sync', '--all'])
 
         assert result.exit_code == 0
         assert [i.cn for i in FakeLMNSchoolclass.instances] == ['7a', '8b']
 
+    def test_sync_all_excludes_the_attic_of_a_secondary_school(self, runner, monkeypatch):
+        # In a multischool setup the attic's cn carries the school token
+        # ('other-school-attic'), so it can only be recognized by its dn.
+        monkeypatch.setattr(schoolclass, 'LMNSchoolclass', FakeLMNSchoolclass)
+        monkeypatch.setattr(schoolclass.lr, 'getvalues', lambda url, attrs, **kw: [
+            sc('other-school-7a', ou='7a', school='other-school'),
+            sc('other-school-attic', ou='attic', school='other-school'),
+        ])
+
+        result = runner.invoke(schoolclass.app, ['sync', '--all', '--school', 'other-school'])
+
+        assert result.exit_code == 0
+        assert [i.cn for i in FakeLMNSchoolclass.instances] == ['other-school-7a']
+
     def test_sync_all_lists_only_the_selected_school(self, runner, monkeypatch):
         # /schoolclasses has no school-scoped subdn: without an explicit school
         # the reader returns the schoolclasses of every school, which then blow
         # up one by one in LMNSchoolclass(school=...).
         calls = []
-        def mock_getval(url, attr, **kw):
-            calls.append((url, attr, kw.get('school')))
-            return ['7a']
+        def mock_getvalues(url, attrs, **kw):
+            calls.append((url, attrs, kw.get('school')))
+            return [sc('7a')]
 
         monkeypatch.setattr(schoolclass, 'LMNSchoolclass', FakeLMNSchoolclass)
-        monkeypatch.setattr(schoolclass.lr, 'getval', mock_getval)
+        monkeypatch.setattr(schoolclass.lr, 'getvalues', mock_getvalues)
 
         result = runner.invoke(schoolclass.app, ['sync', '--all', '--school', 'other-school'])
 
         assert result.exit_code == 0
-        assert calls == [('/schoolclasses', 'cn', 'other-school')]
+        assert calls == [('/schoolclasses', ['cn', 'dn'], 'other-school')]
         assert FakeLMNSchoolclass.instances[0].school == 'other-school'
 
     def test_unknown_school_exits_with_error(self, runner, monkeypatch):
