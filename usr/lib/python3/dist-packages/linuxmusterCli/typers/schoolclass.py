@@ -8,6 +8,7 @@ from rich.table import Table
 
 from linuxmusterTools.common import lprint
 from linuxmusterTools.ldapconnector import LMNLdapReader as lr, LMNSchoolclass
+from linuxmusterTools.ldapconnector.checks import is_valid_school, valid_schools
 from .state import state
 from .format import printf, outformat, sort_schoolclasses
 
@@ -31,9 +32,16 @@ def sync(
         typer.secho("Please select at least a schoolclass or the option --all", fg=typer.colors.RED)
         return
 
+    if not is_valid_school(school):
+        typer.secho(
+            f"Unknown school {school}. Available schools: {', '.join(valid_schools())}",
+            fg=typer.colors.RED
+        )
+        sys.exit(1)
+
     if sync_all:
         sync_teachers, sync_students, sync_parents = True, True, True
-        schoolclasses = lr.getval('/schoolclasses','cn')
+        schoolclasses = lr.getval('/schoolclasses', 'cn', school=school)
         if 'attic' in schoolclasses:
             schoolclasses.remove('attic')
     else:

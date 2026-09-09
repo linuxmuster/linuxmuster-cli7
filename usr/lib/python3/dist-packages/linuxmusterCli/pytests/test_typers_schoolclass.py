@@ -1,3 +1,5 @@
+import pytest
+
 from linuxmusterCli.typers import schoolclass
 from linuxmusterCli.typers.state import state
 
@@ -32,11 +34,20 @@ class FakeLMNSchoolclass:
         FakeLMNSchoolclass.instances.append(self)
 
 
+SCHOOLS = ['default-school', 'other-school']
+
+
 class TestSync:
 
     def setup_method(self):
         FakeLMNSchoolclass.instances = []
         FakeLMNSchoolclass.raise_map = {}
+
+    @pytest.fixture(autouse=True)
+    def _schools(self, monkeypatch):
+        # sync() validates its --school against ldap before doing anything
+        monkeypatch.setattr(schoolclass, 'valid_schools', lambda: list(SCHOOLS))
+        monkeypatch.setattr(schoolclass, 'is_valid_school', lambda school: school in SCHOOLS)
 
     def test_no_schoolclass_and_no_sync_all_prints_error_and_exits_zero(self, runner, monkeypatch):
         # NOTE: this branch is a plain `return`, not typer.Exit() -> exit_code stays 0
@@ -96,7 +107,7 @@ class TestSync:
 
     def test_sync_all_forces_all_flags_and_excludes_attic(self, runner, monkeypatch):
         monkeypatch.setattr(schoolclass, 'LMNSchoolclass', FakeLMNSchoolclass)
-        monkeypatch.setattr(schoolclass.lr, 'getval', lambda url, attr: ['7a', '8b', 'attic'])
+        monkeypatch.setattr(schoolclass.lr, 'getval', lambda url, attr, **kw: ['7a', '8b', 'attic'])
 
         result = runner.invoke(schoolclass.app, ['sync', '--all'])
 
@@ -111,12 +122,50 @@ class TestSync:
         # 'attic' is not a real schoolclass and may be missing from the LDAP result:
         # its removal must stay optional instead of raising ValueError.
         monkeypatch.setattr(schoolclass, 'LMNSchoolclass', FakeLMNSchoolclass)
-        monkeypatch.setattr(schoolclass.lr, 'getval', lambda url, attr: ['7a', '8b'])
+        monkeypatch.setattr(schoolclass.lr, 'getval', lambda url, attr, **kw: ['7a', '8b'])
 
         result = runner.invoke(schoolclass.app, ['sync', '--all'])
 
         assert result.exit_code == 0
         assert [i.cn for i in FakeLMNSchoolclass.instances] == ['7a', '8b']
+
+    def test_sync_all_lists_only_the_selected_school(self, runner, monkeypatch):
+        # /schoolclasses has no school-scoped subdn: without an explicit school
+        # the reader returns the schoolclasses of every school, which then blow
+        # up one by one in LMNSchoolclass(school=...).
+        calls = []
+        def mock_getval(url, attr, **kw):
+            calls.append((url, attr, kw.get('school')))
+            return ['7a']
+
+        monkeypatch.setattr(schoolclass, 'LMNSchoolclass', FakeLMNSchoolclass)
+        monkeypatch.setattr(schoolclass.lr, 'getval', mock_getval)
+
+        result = runner.invoke(schoolclass.app, ['sync', '--all', '--school', 'other-school'])
+
+        assert result.exit_code == 0
+        assert calls == [('/schoolclasses', 'cn', 'other-school')]
+        assert FakeLMNSchoolclass.instances[0].school == 'other-school'
+
+    def test_unknown_school_exits_with_error(self, runner, monkeypatch):
+        monkeypatch.setattr(schoolclass, 'LMNSchoolclass', FakeLMNSchoolclass)
+
+        result = runner.invoke(schoolclass.app, ['sync', '--all', '--school', 'nonexistent'])
+
+        assert result.exit_code == 1
+        assert 'Unknown school nonexistent' in result.output
+        assert 'default-school' in result.output
+        assert FakeLMNSchoolclass.instances == []
+
+    def test_global_is_rejected_as_a_school(self, runner, monkeypatch):
+        # 'global' is a routing marker for global-administrators, not a school
+        monkeypatch.setattr(schoolclass, 'LMNSchoolclass', FakeLMNSchoolclass)
+
+        result = runner.invoke(schoolclass.app, ['sync', '--all', '--school', 'global'])
+
+        assert result.exit_code == 1
+        assert 'Unknown school global' in result.output
+        assert FakeLMNSchoolclass.instances == []
 
     def test_fill_members_exception_aborts_immediately(self, runner, monkeypatch):
         # Each fill_members() call is wrapped in its own try/except that does
