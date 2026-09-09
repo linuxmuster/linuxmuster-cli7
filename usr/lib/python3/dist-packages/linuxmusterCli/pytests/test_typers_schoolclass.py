@@ -167,23 +167,56 @@ class TestSync:
         assert 'Unknown school global' in result.output
         assert FakeLMNSchoolclass.instances == []
 
-    def test_fill_members_exception_aborts_immediately(self, runner, monkeypatch):
-        # Each fill_members() call is wrapped in its own try/except that does
-        # sys.exit(e) on failure. sys.exit raises SystemExit (not Exception), so it
-        # is NOT caught by the outer `except Exception` -- it propagates straight out,
-        # aborting both the remaining sync steps for the current schoolclass AND any
-        # further schoolclasses in the list.
+    def test_fill_members_exception_does_not_abort_the_run(self, runner, monkeypatch):
+        # A failing subgroup must not stop the command: the remaining subgroups
+        # of that schoolclass and every following schoolclass are still synced,
+        # and the failures are reported at the end with a non-zero exit code.
         monkeypatch.setattr(schoolclass, 'LMNSchoolclass', FakeLMNSchoolclass)
         FakeLMNSchoolclass.raise_map = {'a': {'teachers': 'boom'}}
 
         result = runner.invoke(schoolclass.app, ['sync', '--schoolclass', 'a,b', '--groups'])
 
         assert result.exit_code == 1
-        # only the first schoolclass was even instantiated
-        assert len(FakeLMNSchoolclass.instances) == 1
-        # and its own remaining steps (parents/students) never ran either
-        assert not FakeLMNSchoolclass.instances[0].parents_group.filled
-        assert not FakeLMNSchoolclass.instances[0].students_group.filled
+        assert [i.cn for i in FakeLMNSchoolclass.instances] == ['a', 'b']
+
+        first, second = FakeLMNSchoolclass.instances
+        assert not first.teachers_group.filled
+        assert first.parents_group.filled
+        assert first.students_group.filled
+        assert second.teachers_group.filled
+        assert second.parents_group.filled
+        assert second.students_group.filled
+
+        assert 'boom' in result.output
+        assert 'Could not sync: a-teachers' in result.output
+
+    def test_unknown_schoolclass_is_reported_and_skipped(self, runner, monkeypatch):
+        class FakeMissingSchoolclass(FakeLMNSchoolclass):
+            def __init__(self, cn, school='default-school'):
+                if cn == 'nope':
+                    raise Exception(f"The schoolclass {cn} was not found in ldap.")
+                super().__init__(cn, school=school)
+
+        monkeypatch.setattr(schoolclass, 'LMNSchoolclass', FakeMissingSchoolclass)
+
+        result = runner.invoke(schoolclass.app, ['sync', '--schoolclass', 'nope,b', '--groups'])
+
+        assert result.exit_code == 1
+        assert [i.cn for i in FakeLMNSchoolclass.instances] == ['b']
+        assert 'was not found in ldap' in result.output
+        assert 'Could not sync: nope' in result.output
+
+    def test_all_groups_synced_exits_zero(self, runner, monkeypatch):
+        monkeypatch.setattr(schoolclass, 'LMNSchoolclass', FakeLMNSchoolclass)
+
+        result = runner.invoke(schoolclass.app, ['sync', '--schoolclass', 'a,b', '--groups'])
+
+        assert result.exit_code == 0
+        assert 'Could not sync' not in result.output
+        for inst in FakeLMNSchoolclass.instances:
+            assert inst.teachers_group.filled
+            assert inst.parents_group.filled
+            assert inst.students_group.filled
 
 
 SCHOOLCLASS_DATA = {

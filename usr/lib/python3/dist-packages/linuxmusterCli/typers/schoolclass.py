@@ -56,37 +56,38 @@ def sync(
             typer.secho("Please choose at least one of the option --teachers, --parents or --students", fg=typer.colors.RED)
             sys.exit(0)
 
-    try:
-        for schoolclass in schoolclasses:
-            lprint.lmn(f"lmncli: Checking groups of schoolclass {schoolclass} in {school}")
+    to_sync = [
+        ('teachers', sync_teachers),
+        ('parents', sync_parents),
+        ('students', sync_students),
+    ]
+    failures = []
+
+    for schoolclass in schoolclasses:
+        lprint.lmn(f"lmncli: Checking groups of schoolclass {schoolclass} in {school}")
+
+        try:
             schoolclass_group = LMNSchoolclass(schoolclass, school=school)
+        except Exception as e:
+            # Keep syncing the other schoolclasses, and report at the end
+            typer.secho(f"\t--> {str(e)}", fg=typer.colors.RED)
+            failures.append(schoolclass)
+            continue
 
-            if sync_teachers:
-                try:
-                    lprint.lmn(f"\t--> teachers group", end="\r")
-                    schoolclass_group.teachers_group.fill_members()
-                    lprint.lmn(f"\t--> teachers group ✅")
-                except Exception as e:
-                    sys.exit(e)
+        for group_type, wanted in to_sync:
+            if not wanted:
+                continue
 
-            if sync_parents:
-                try:
-                    lprint.lmn(f"\t--> parents group", end="\r")
-                    schoolclass_group.parents_group.fill_members()
-                    lprint.lmn(f"\t--> parents group  ✅")
-                except Exception as e:
-                    sys.exit(e)
+            try:
+                lprint.lmn(f"\t--> {group_type} group", end="\r")
+                getattr(schoolclass_group, f'{group_type}_group').fill_members()
+                lprint.lmn(f"\t--> {group_type} group ✅")
+            except Exception as e:
+                typer.secho(f"\t--> {group_type} group ❌ {str(e)}", fg=typer.colors.RED)
+                failures.append(f"{schoolclass}-{group_type}")
 
-            if sync_students:
-                try:
-                    lprint.lmn(f"\t--> students group", end="\r")
-                    schoolclass_group.students_group.fill_members()
-                    lprint.lmn(f"\t--> students group ✅")
-                except Exception as e:
-                    sys.exit(e)
-
-    except Exception as e:
-        print(str(e))
+    if failures:
+        typer.secho(f"Could not sync: {', '.join(failures)}", fg=typer.colors.RED)
         sys.exit(1)
 
 @app.command(help="""Print schoolclasses teacher's memberships.""")
