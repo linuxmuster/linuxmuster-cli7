@@ -33,7 +33,14 @@ class FakeLMNSchoolclass:
         self.teachers_group = FakeGroup(raises.get('teachers'))
         self.parents_group = FakeGroup(raises.get('parents'))
         self.students_group = FakeGroup(raises.get('students'))
+        self.admins_raise = raises.get('admins')
+        self.admins_filled = False
         FakeLMNSchoolclass.instances.append(self)
+
+    def fill_admins(self):
+        if self.admins_raise:
+            raise Exception(self.admins_raise)
+        self.admins_filled = True
 
 
 SCHOOLS = ['default-school', 'other-school']
@@ -284,6 +291,53 @@ def make_fake_get(calls=None):
         raise AssertionError(f"unexpected url {url}")
 
     return fake_get
+
+
+class TestSyncAdmins:
+
+    def setup_method(self):
+        FakeLMNSchoolclass.instances = []
+        FakeLMNSchoolclass.raise_map = {}
+
+    @pytest.fixture(autouse=True)
+    def _schools(self, monkeypatch):
+        monkeypatch.setattr(schoolclass, 'valid_schools', lambda: list(SCHOOLS))
+        monkeypatch.setattr(schoolclass, 'is_valid_school', lambda school: school in SCHOOLS)
+        monkeypatch.setattr(schoolclass, 'LMNSchoolclass', FakeLMNSchoolclass)
+
+    def test_teachers_sync_also_refreshes_sophomorix_admins(self, runner):
+        result = runner.invoke(schoolclass.app, ['sync', '-c', 'a', '--teachers'])
+
+        assert result.exit_code == 0
+        assert FakeLMNSchoolclass.instances[0].admins_filled
+        assert 'sophomorixAdmins' in result.output
+
+    def test_students_only_sync_leaves_sophomorix_admins_alone(self, runner):
+        result = runner.invoke(schoolclass.app, ['sync', '-c', 'a', '--students'])
+
+        assert result.exit_code == 0
+        assert not FakeLMNSchoolclass.instances[0].admins_filled
+
+    def test_sync_all_refreshes_sophomorix_admins_of_every_class(self, runner, monkeypatch):
+        monkeypatch.setattr(schoolclass.lr, 'getvalues',
+                            lambda url, attrs, **kw: [sc('a'), sc('b')])
+
+        result = runner.invoke(schoolclass.app, ['sync', '--all'])
+
+        assert result.exit_code == 0
+        assert [i.cn for i in FakeLMNSchoolclass.instances] == ['a', 'b']
+        assert all(i.admins_filled for i in FakeLMNSchoolclass.instances)
+
+    def test_failing_admins_sync_is_reported_without_aborting(self, runner):
+        FakeLMNSchoolclass.raise_map = {'a': {'admins': 'boom'}}
+
+        result = runner.invoke(schoolclass.app, ['sync', '-c', 'a,b', '--teachers'])
+
+        assert result.exit_code == 1
+        assert [i.cn for i in FakeLMNSchoolclass.instances] == ['a', 'b']
+        assert FakeLMNSchoolclass.instances[1].admins_filled
+        assert 'boom' in result.output
+        assert 'Could not sync: a-admins' in result.output
 
 
 class TestTeachers:

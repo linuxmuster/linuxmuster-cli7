@@ -26,7 +26,7 @@ ATTIC_OU = ',OU=attic,'
 @app.command(help="""Manage schoolclasses' groups.""")
 def sync(
         schoolclass: Annotated[str, typer.Option("--schoolclass", "-c", help="Comma separated list of schoolclasses to handle")] = '',
-        sync_teachers: Annotated[bool, typer.Option("--teachers", help="Update the teachers group of this schoolclass")] = False,
+        sync_teachers: Annotated[bool, typer.Option("--teachers", help="Update the teachers group and the sophomorixAdmins of this schoolclass")] = False,
         sync_students: Annotated[bool, typer.Option("--students", help="Update the students group of this schoolclass")] = False,
         sync_parents: Annotated[bool, typer.Option("--parents", help="Update the parents group of this schoolclass")] = False,
         sync_groups: Annotated[bool, typer.Option("--groups", help="Update the parents, teachers and students groups of this schoolclass")] = False,
@@ -91,6 +91,17 @@ def sync(
             except Exception as e:
                 error(f"\t--> {group_type} group ❌ {str(e)}")
                 failures.append(f"{schoolclass}-{group_type}")
+
+        if sync_teachers:
+            # sophomorix stores the teachers of a class in sophomorixAdmins and
+            # rebuilds member from it, so both views have to stay equal
+            try:
+                lprint.lmn(f"\t--> sophomorixAdmins", end="\r")
+                schoolclass_group.fill_admins()
+                lprint.lmn(f"\t--> sophomorixAdmins ✅")
+            except Exception as e:
+                error(f"\t--> sophomorixAdmins ❌ {str(e)}")
+                failures.append(f"{schoolclass}-admins")
 
     if failures:
         error(f"Could not sync: {', '.join(failures)}")
