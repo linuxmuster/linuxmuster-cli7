@@ -1,5 +1,7 @@
 import pytest
 
+from linuxmusterTools.common import SchoolclassExistsError
+
 from linuxmusterCli.typers import schoolclass
 from linuxmusterCli.typers.state import state
 
@@ -378,3 +380,112 @@ class TestTeachers:
         assert result.exit_code == 0
         assert 'Schoolclass\tTeachers\tHidden\tJoinable' in result.output
         assert '7a\tDoe John\tFalse\tTrue' in result.output
+
+
+class FakeCleanup:
+    """Stand-in for linuxmusterTools' delete_schoolclass_subgroups()."""
+
+    calls = []
+    deleted_map = {}
+    raise_map = {}
+
+    @classmethod
+    def delete(cls, cn, school='default-school'):
+        cls.calls.append((cn, school))
+
+        if cn in cls.raise_map:
+            raise cls.raise_map[cn]
+
+        return cls.deleted_map.get(cn, [
+            f'CN={cn}-students,OU={cn},OU=Students,OU={school},OU=SCHOOLS,DC=linuxmuster,DC=lan',
+            f'OU={cn},OU=Students,OU={school},OU=SCHOOLS,DC=linuxmuster,DC=lan',
+        ])
+
+
+class TestCleanup:
+
+    def setup_method(self):
+        FakeCleanup.calls = []
+        FakeCleanup.deleted_map = {}
+        FakeCleanup.raise_map = {}
+
+    @pytest.fixture(autouse=True)
+    def _cleanup_env(self, monkeypatch):
+        monkeypatch.setattr(schoolclass, 'valid_schools', lambda: list(SCHOOLS))
+        monkeypatch.setattr(schoolclass, 'is_valid_school', lambda school: school in SCHOOLS)
+        monkeypatch.setattr(schoolclass, 'delete_schoolclass_subgroups', FakeCleanup.delete)
+        monkeypatch.setattr(schoolclass, 'orphan_schoolclass_subgroups', lambda school='default-school': [])
+
+    def test_no_schoolclass_and_no_all_does_nothing(self, runner):
+        result = runner.invoke(schoolclass.app, ['cleanup'])
+
+        assert result.exit_code == 0
+        assert 'Please select at least a schoolclass or the option --all' in result.output
+        assert FakeCleanup.calls == []
+
+    def test_unknown_school_exits_with_error(self, runner):
+        result = runner.invoke(schoolclass.app, ['cleanup', '--all', '--school', 'nonexistent'])
+
+        assert result.exit_code == 1
+        assert 'Unknown school nonexistent' in result.output
+        assert FakeCleanup.calls == []
+
+    def test_explicit_schoolclasses_are_cleaned_up(self, runner):
+        result = runner.invoke(schoolclass.app, ['cleanup', '--schoolclass', 'a,b'])
+
+        assert result.exit_code == 0
+        assert FakeCleanup.calls == [('a', 'default-school'), ('b', 'default-school')]
+        assert 'deleted CN=a-students' in result.output
+        assert 'deleted OU=b' in result.output
+
+    def test_school_option_is_forwarded(self, runner):
+        result = runner.invoke(schoolclass.app, ['cleanup', '-c', 'a', '-s', 'other-school'])
+
+        assert result.exit_code == 0
+        assert FakeCleanup.calls == [('a', 'other-school')]
+
+    def test_all_cleans_up_every_orphan(self, runner, monkeypatch):
+        monkeypatch.setattr(schoolclass, 'orphan_schoolclass_subgroups',
+                            lambda school='default-school': ['16e', '8b'])
+
+        result = runner.invoke(schoolclass.app, ['cleanup', '--all'])
+
+        assert result.exit_code == 0
+        assert [cn for cn, _ in FakeCleanup.calls] == ['16e', '8b']
+
+    def test_all_without_orphan_reports_nothing_to_do(self, runner):
+        result = runner.invoke(schoolclass.app, ['cleanup', '--all'])
+
+        assert result.exit_code == 0
+        assert 'No group of a deleted schoolclass found in default-school' in result.output
+        assert FakeCleanup.calls == []
+
+    def test_nothing_left_to_delete_is_not_a_failure(self, runner):
+        FakeCleanup.deleted_map = {'a': []}
+
+        result = runner.invoke(schoolclass.app, ['cleanup', '-c', 'a'])
+
+        assert result.exit_code == 0
+        assert 'nothing left to delete' in result.output
+
+    def test_still_existing_schoolclass_is_reported_and_skipped(self, runner):
+        FakeCleanup.raise_map = {
+            'a': SchoolclassExistsError('The schoolclass a still exists in default-school'),
+        }
+
+        result = runner.invoke(schoolclass.app, ['cleanup', '-c', 'a,b'])
+
+        assert result.exit_code == 1
+        assert [cn for cn, _ in FakeCleanup.calls] == ['a', 'b']
+        assert 'still exists' in result.output
+        assert 'Could not clean up: a' in result.output
+
+    def test_ldap_failure_does_not_abort_the_run(self, runner):
+        FakeCleanup.raise_map = {'a': Exception('boom')}
+
+        result = runner.invoke(schoolclass.app, ['cleanup', '-c', 'a,b'])
+
+        assert result.exit_code == 1
+        assert [cn for cn, _ in FakeCleanup.calls] == ['a', 'b']
+        assert 'boom' in result.output
+        assert 'Could not clean up: a' in result.output

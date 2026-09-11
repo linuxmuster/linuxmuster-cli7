@@ -6,8 +6,13 @@ from rich.console import Console
 from rich import print
 from rich.table import Table
 
-from linuxmusterTools.common import lprint
-from linuxmusterTools.ldapconnector import LMNLdapReader as lr, LMNSchoolclass
+from linuxmusterTools.common import lprint, SchoolclassExistsError
+from linuxmusterTools.ldapconnector import (
+    LMNLdapReader as lr,
+    LMNSchoolclass,
+    delete_schoolclass_subgroups,
+    orphan_schoolclass_subgroups,
+)
 from linuxmusterTools.ldapconnector.checks import is_valid_school, valid_schools
 from .state import state
 from .format import printf, outformat, sort_schoolclasses, error
@@ -89,6 +94,58 @@ def sync(
 
     if failures:
         error(f"Could not sync: {', '.join(failures)}")
+        raise typer.Exit(code=1)
+
+@app.command(help="""Delete the groups left behind by a deleted schoolclass.""")
+def cleanup(
+        schoolclass: Annotated[str, typer.Option("--schoolclass", "-c", help="Comma separated list of deleted schoolclasses to clean up")] = '',
+        cleanup_all: Annotated[bool, typer.Option("--all", help="Clean up every schoolclass which does not exist anymore")] = False,
+        school: Annotated[str, typer.Option("--school", "-s")] = 'default-school',
+        ):
+
+    if not cleanup_all and not schoolclass:
+        typer.secho("Please select at least a schoolclass or the option --all", fg=typer.colors.RED)
+        return
+
+    if not is_valid_school(school):
+        error(f"Unknown school {school}. Available schools: {', '.join(valid_schools())}")
+        raise typer.Exit(code=1)
+
+    if cleanup_all:
+        schoolclasses = orphan_schoolclass_subgroups(school=school)
+
+        if not schoolclasses:
+            lprint.lmn(f"lmncli: No group of a deleted schoolclass found in {school}")
+            return
+    else:
+        schoolclasses = schoolclass.split(',')
+
+    failures = []
+
+    for schoolclass in schoolclasses:
+        lprint.lmn(f"lmncli: Cleaning up the groups of the deleted schoolclass {schoolclass} in {school}")
+
+        try:
+            deleted = delete_schoolclass_subgroups(schoolclass, school=school)
+        except SchoolclassExistsError as e:
+            # Keep cleaning up the other schoolclasses, and report at the end
+            error(f"\t--> {str(e)}")
+            failures.append(schoolclass)
+            continue
+        except Exception as e:
+            error(f"\t--> {str(e)}")
+            failures.append(schoolclass)
+            continue
+
+        if not deleted:
+            lprint.lmn(f"\t--> nothing left to delete")
+            continue
+
+        for dn in deleted:
+            lprint.lmn(f"\t--> deleted {dn}")
+
+    if failures:
+        error(f"Could not clean up: {', '.join(failures)}")
         raise typer.Exit(code=1)
 
 @app.command(help="""Print schoolclasses teacher's memberships.""")
