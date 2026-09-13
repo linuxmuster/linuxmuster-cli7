@@ -8,7 +8,7 @@ Actually, followings commands are available (add `--help` to display all options
  * `lmncli devices FILTER_STR` : List all devices which hostname, mac or room containing FILTER_STR. Gives all devices when FILTER_STR is emtpy.
  * `lmncli linbo groups` : Display all available linbo groups.                          
  * `lmncli linbo images` : Display all available linbo images.                      
- * `lmncli linbo lastsync GROUP` : Display last synchronisation date for all devices or the selected GROUP, or all if GROUP is empty
+ * `lmncli linbo lastsync GROUP` : Display last synchronisation date for all devices or the selected GROUP, or all if GROUP is empty. Use `-w/--warning` or `-d/--danger` to only list the devices in the matching state (yellow, resp. red)
  * `lmncli samba dns` : Display all current DNS enries.
  * `lmncli samba drives` : Display all configured drives in linuxmuster.net for the specified school.
  * `lmncli samba gpos` : Display all GPOS details on the system.

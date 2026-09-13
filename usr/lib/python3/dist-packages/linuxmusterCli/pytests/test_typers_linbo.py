@@ -254,3 +254,109 @@ class TestLastsync:
         # Raw output uses the unformatted sync dict, not the colored/rendered string.
         assert "{'image': 'win10.image', 'date': 1700000000, 'status': 'success'}" in result.output
         assert 'No date found' not in result.output
+
+    def _devices_by_status(self):
+        return {
+            'win10': {
+                'hosts': [
+                    {
+                        'hostname': 'pc-ok', 'ip': '10.0.0.1',
+                        'image': [{'image': 'win10.image', 'date': 1700000000, 'status': 'success'}],
+                    },
+                    {
+                        'hostname': 'pc-warn', 'ip': '10.0.0.2',
+                        'image': [{'image': 'win10.image', 'date': 1600000000, 'status': 'warning'}],
+                    },
+                    {
+                        'hostname': 'pc-danger', 'ip': '10.0.0.3',
+                        'image': [{'image': 'win10.image', 'date': 'Never', 'status': 'danger'}],
+                    },
+                ]
+            },
+            'ubuntu': {
+                'hosts': [
+                    {
+                        'hostname': 'pc-ubuntu', 'ip': '10.0.0.4',
+                        'image': [{'image': 'ubuntu.image', 'date': 1700000000, 'status': 'success'}],
+                    },
+                ]
+            },
+        }
+
+    def _patch_devices(self, monkeypatch):
+        devices = self._devices_by_status()
+        monkeypatch.setattr(linbo, 'list_workstations', lambda **kw: devices)
+        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices: None)
+
+    def test_without_status_filter_all_hosts_are_shown(self, runner, monkeypatch):
+        self._patch_devices(monkeypatch)
+
+        result = runner.invoke(linbo.app, ['lastsync'])
+
+        assert result.exit_code == 0
+        for hostname in ['pc-ok', 'pc-warn', 'pc-danger', 'pc-ubuntu']:
+            assert hostname in result.output
+
+    def test_warning_option_keeps_only_warning_hosts(self, runner, monkeypatch):
+        self._patch_devices(monkeypatch)
+
+        result = runner.invoke(linbo.app, ['lastsync', '--warning'])
+
+        assert result.exit_code == 0
+        assert 'pc-warn' in result.output
+        assert 'pc-ok' not in result.output
+        assert 'pc-danger' not in result.output
+
+    def test_danger_option_keeps_only_danger_hosts(self, runner, monkeypatch):
+        self._patch_devices(monkeypatch)
+
+        result = runner.invoke(linbo.app, ['lastsync', '-d'])
+
+        assert result.exit_code == 0
+        assert 'pc-danger' in result.output
+        assert 'pc-ok' not in result.output
+        assert 'pc-warn' not in result.output
+
+    def test_both_options_keep_warning_and_danger_hosts(self, runner, monkeypatch):
+        self._patch_devices(monkeypatch)
+
+        result = runner.invoke(linbo.app, ['lastsync', '-w', '-d'])
+
+        assert result.exit_code == 0
+        assert 'pc-warn' in result.output
+        assert 'pc-danger' in result.output
+        assert 'pc-ok' not in result.output
+
+    def test_group_without_matching_host_is_skipped(self, runner, monkeypatch):
+        self._patch_devices(monkeypatch)
+
+        result = runner.invoke(linbo.app, ['lastsync', '--danger'])
+
+        assert result.exit_code == 0
+        # The ubuntu group only holds a successfully synced host, its table is not printed.
+        assert 'pc-ubuntu' not in result.output
+        assert 'ubuntu.image' not in result.output
+
+    def test_host_matching_on_one_image_keeps_all_its_images(self, runner, monkeypatch):
+        devices = {
+            'win10': {
+                'hosts': [
+                    {
+                        'hostname': 'pc-mixed', 'ip': '10.0.0.5',
+                        'image': [
+                            {'image': 'win10.image', 'date': 1700000000, 'status': 'success'},
+                            {'image': 'ubuntu.image', 'date': 1600000000, 'status': 'warning'},
+                        ],
+                    },
+                ]
+            },
+        }
+        monkeypatch.setattr(linbo, 'list_workstations', lambda **kw: devices)
+        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices: None)
+
+        result = runner.invoke(linbo.app, ['lastsync', '--warning'])
+
+        assert result.exit_code == 0
+        assert 'pc-mixed' in result.output
+        assert 'win10.image' in result.output
+        assert 'ubuntu.image' in result.output

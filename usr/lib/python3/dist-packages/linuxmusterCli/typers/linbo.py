@@ -79,8 +79,23 @@ def images():
 def lastsync(
     group: Annotated[str, typer.Argument()] = '',
     school: Annotated[str, typer.Option("--school", "-s")] = 'default-school',
+    warning: Annotated[bool, typer.Option("--warning", "-w", help="Only show devices with a warning status (yellow, not synchronised for more than 7 days).")] = False,
+    danger: Annotated[bool, typer.Option("--danger", "-d", help="Only show devices with a danger status (red, never synchronised or not for more than 30 days).")] = False,
 ):
     # Temporary UGLY solution. The code in linuxmusterTools must be rewritten
+
+    status_filter = set()
+    if warning:
+        status_filter.add('warning')
+    if danger:
+        status_filter.add('danger')
+
+    def keep(host):
+        # A host is kept as soon as one of its images matches the requested
+        # status, its other images are still displayed for the context.
+        if not status_filter:
+            return True
+        return any(sync['status'] in status_filter for sync in host['image'])
 
     def format(sync_data):
         epoch = sync_data['date']
@@ -111,6 +126,10 @@ def lastsync(
         if not images:
             continue
 
+        filtered_hosts = [host for host in hosts['hosts'] if keep(host)]
+        if not filtered_hosts:
+            continue
+
         sync = Table()
         sync.add_column('Hostname', style="cyan")
         sync.add_column('IP', style="cyan")
@@ -119,7 +138,7 @@ def lastsync(
             sync.add_column(f'Last synchronisation for {image}')
             data[0].append(f'Last synchronisation for {image}')
 
-        for host in hosts['hosts']:
+        for host in filtered_hosts:
             sync_by_image = {d['image']: d for d in host['image']}
             sync.add_row(
                 host['hostname'],
