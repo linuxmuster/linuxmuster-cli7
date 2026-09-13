@@ -1,3 +1,19 @@
+linuxmuster-cli7 (7.4.8) lmn74; urgency=medium
+
+  * [schoolclass] Teachers are now written to sophomorixAdmins as well as
+    to the member list, which is where sophomorix and the webui read
+    them from.
+  * [schoolclass] New command to clean up the orphan subgroups left
+    behind by a killed schoolclass.
+  * [teachers] Ignore the attic group when listing teachers.
+  * [students] Ignore the attic for every school.
+  * [students] Do not abort on a single failure: every failure is
+    collected and displayed, with a non-zero exit code.
+  * [samba] Check the given school is a valid one.
+  * [help] Update the help of several parameters. 
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Sun, 13 Sep 2026 16:07:51 +0200
+
 linuxmuster-cli7 (7.4.7) lmn74; urgency=medium
 
   * [students] "lmncli students reset-internet" now uses
