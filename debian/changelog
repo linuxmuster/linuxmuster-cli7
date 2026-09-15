@@ -1,3 +1,20 @@
+linuxmuster-cli7 (7.4.9) lmn74; urgency=medium
+
+  * [linbo] "lmncli linbo lastsync" takes -w/--warning and -d/--danger to
+    list only the devices in that state (yellow: not synchronised for
+    more than 7 days, red: never or more than 30 days). A host is kept as
+    soon as one of its images matches, its other images still being
+    displayed for the context, and a group left empty by the filter is
+    skipped entirely.
+  * [packaging] postinst: the deprecated venv migration is dropped,
+    create_linuxmuster_venv() being a no-op when the venv is already
+    there.
+  * [packaging] New linuxmuster-venv dpkg trigger: reinstall the CLI
+    requirements when linuxmuster-tools7 rebuilds the shared venv after a
+    Python upgrade.
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Tue, 15 Sep 2026 21:19:14 +0200
+
 linuxmuster-cli7 (7.4.8) lmn74; urgency=medium
 
   * [schoolclass] Teachers are now written to sophomorixAdmins as well as
