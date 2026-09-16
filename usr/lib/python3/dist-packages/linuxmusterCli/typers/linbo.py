@@ -130,13 +130,15 @@ def lastsync(
         if not filtered_hosts:
             continue
 
-        sync = Table()
+        sync = Table(title=f"Group {grp} ({len(filtered_hosts)} device(s))")
         sync.add_column('Hostname', style="cyan")
         sync.add_column('IP', style="cyan")
         data = [[c.header for c in sync.columns]]
         for image in images:
             sync.add_column(f'Last synchronisation for {image}')
             data[0].append(f'Last synchronisation for {image}')
+        
+        data[0].append('Group')
 
         for host in filtered_hosts:
             sync_by_image = {d['image']: d for d in host['image']}
@@ -148,7 +150,8 @@ def lastsync(
             data.append([
                 host['hostname'],
                 host['ip'],
-                *[sync_by_image[image] for image in images]
+                *[sync_by_image[image] for image in images],
+                grp
             ])
 
         if state.format:

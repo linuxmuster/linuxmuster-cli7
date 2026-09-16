@@ -255,6 +255,33 @@ class TestLastsync:
         assert "{'image': 'win10.image', 'date': 1700000000, 'status': 'success'}" in result.output
         assert 'No date found' not in result.output
 
+    def test_group_name_is_shown_as_table_title(self, runner, monkeypatch):
+        devices = self._devices()
+        monkeypatch.setattr(linbo, 'list_workstations', lambda **kw: devices)
+        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices: None)
+
+        result = runner.invoke(linbo.app, ['lastsync'])
+
+        assert result.exit_code == 0
+        # Only the win10 group is displayed, with its two kept hosts.
+        assert 'Group win10 (2 device(s))' in result.output
+
+    def test_group_is_appended_to_exported_rows(self, runner, monkeypatch):
+        devices = self._devices()
+        monkeypatch.setattr(linbo, 'list_workstations', lambda **kw: devices)
+        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices: None)
+        state.format = True
+        state.raw = True
+
+        result = runner.invoke(linbo.app, ['lastsync'])
+
+        assert result.exit_code == 0
+        lines = [line for line in result.output.splitlines() if line.strip()]
+        # Exported rows of every group are concatenated, so the group is the
+        # last field of the header and of each row.
+        assert lines[0].split('\t')[-1] == 'Group'
+        assert [line.split('\t')[-1] for line in lines[1:]] == ['win10', 'win10']
+
     def _devices_by_status(self):
         return {
             'win10': {
