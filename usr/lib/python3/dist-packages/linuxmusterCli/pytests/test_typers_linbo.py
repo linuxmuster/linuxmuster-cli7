@@ -1,3 +1,5 @@
+import re
+
 from linuxmusterCli.typers import linbo
 from linuxmusterCli.typers.state import state
 
@@ -241,7 +243,7 @@ class TestLastsync:
         assert result.exit_code == 0
         assert seen['kwargs'] == {'school': 'other-school', 'groups': ['win10']}
 
-    def test_raw_format_prints_unformatted_sync_dict(self, runner, monkeypatch):
+    def test_raw_format_exports_scalars_not_the_sync_dict(self, runner, monkeypatch):
         devices = self._devices()
         monkeypatch.setattr(linbo, 'list_workstations', lambda **kw: devices)
         monkeypatch.setattr(linbo, 'last_sync_all', lambda devices: None)
@@ -251,8 +253,15 @@ class TestLastsync:
         result = runner.invoke(linbo.app, ['lastsync'])
 
         assert result.exit_code == 0
-        # Raw output uses the unformatted sync dict, not the colored/rendered string.
-        assert "{'image': 'win10.image', 'date': 1700000000, 'status': 'success'}" in result.output
+        rows = [line.split('\t') for line in result.output.splitlines() if line.strip()]
+        # One field per value: an ISO date (or 'Never') and the status as
+        # text, since the export carries no colour. Never a Python repr.
+        assert "{'image'" not in result.output
+        assert re.fullmatch(r'\d{4}-\d{2}-\d{2} \d{2}:\d{2}', rows[1][2])
+        assert rows[1][3] == 'success'
+        assert rows[2][2] == 'Never'
+        assert rows[2][3] == 'success'
+        # The rendered, colour-oriented string stays out of the export.
         assert 'No date found' not in result.output
 
     def test_group_name_is_shown_as_table_title(self, runner, monkeypatch):
@@ -334,12 +343,12 @@ class TestLastsync:
 
         assert result.exit_code == 0
         rows = [line.split('\t') for line in result.output.splitlines() if line.strip()]
-        assert rows[0][3] == 'Applied version of win10.image'
-        assert rows[1][3] == '2026-01-27 11:07'
+        assert rows[0][4] == 'Applied version of win10.image'
+        assert rows[1][4] == '2026-01-27 11:07'
         # A host which never synced the image has no version at all.
-        assert rows[2][3] == ''
+        assert rows[2][4] == ''
         # An unparsable timestamp is shown as it is rather than dropped.
-        assert rows[3][3] == 'not-a-timestamp'
+        assert rows[3][4] == 'not-a-timestamp'
 
     def _devices_by_status(self):
         return {

@@ -149,9 +149,10 @@ def lastsync(
         data = [[c.header for c in sync.columns]]
         for image in images:
             sync.add_column(f'Last synchronisation for {image}')
+            # The console packs date, status (as a colour) and applied
+            # version in one cell; exports keep one value per field.
             data[0].append(f'Last synchronisation for {image}')
-            # The console shows the applied version under the sync date, in
-            # the same cell; exports keep one value per field.
+            data[0].append(f'Status for {image}')
             data[0].append(f'Applied version of {image}')
         
         data[0].append('Group')
@@ -165,8 +166,14 @@ def lastsync(
             )
             sync_fields = []
             for image in images:
-                sync_fields.append(sync_by_image[image])
-                sync_fields.append(image_version(sync_by_image[image]))
+                sync_data = sync_by_image[image]
+                epoch = sync_data['date']
+                sync_fields.append(
+                    'Never' if epoch == 'Never'
+                    else datetime.fromtimestamp(epoch).strftime('%Y-%m-%d %H:%M')
+                )
+                sync_fields.append(sync_data['status'])
+                sync_fields.append(image_version(sync_data))
             data.append([
                 host['hostname'],
                 host['ip'],
