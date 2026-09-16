@@ -97,6 +97,15 @@ def lastsync(
             return True
         return any(sync['status'] in status_filter for sync in host['image'])
 
+    def image_version(sync_data):
+        # ISO, not the locale-dependent format of the sync date: this also
+        # goes to the csv/raw exports, which are meant to be grepped.
+        version = sync_data.get('imageVersion')
+        try:
+            return datetime.strptime(version, '%Y%m%d%H%M').strftime('%Y-%m-%d %H:%M')
+        except (TypeError, ValueError):
+            return version or ''
+
     def format(sync_data):
         epoch = sync_data['date']
         status = sync_data['status']
@@ -110,7 +119,11 @@ def lastsync(
         }
         color = color_map[status]
         date = datetime.fromtimestamp(epoch).strftime('%c')
-        return f'[{color}]{date}[/{color}]'
+        rendered = f'[{color}]{date}[/{color}]'
+        version = image_version(sync_data)
+        if version:
+            rendered += f' [dim](image {version})[/dim]'
+        return rendered
 
     if group:
         devices = list_workstations(school=school, groups=[group])
@@ -137,6 +150,9 @@ def lastsync(
         for image in images:
             sync.add_column(f'Last synchronisation for {image}')
             data[0].append(f'Last synchronisation for {image}')
+            # The console shows the applied version under the sync date, in
+            # the same cell; exports keep one value per field.
+            data[0].append(f'Applied version of {image}')
         
         data[0].append('Group')
 
@@ -147,10 +163,14 @@ def lastsync(
                 host['ip'],
                 *[format(sync_by_image[image]) for image in images]
             )
+            sync_fields = []
+            for image in images:
+                sync_fields.append(sync_by_image[image])
+                sync_fields.append(image_version(sync_by_image[image]))
             data.append([
                 host['hostname'],
                 host['ip'],
-                *[sync_by_image[image] for image in images],
+                *sync_fields,
                 grp
             ])
 

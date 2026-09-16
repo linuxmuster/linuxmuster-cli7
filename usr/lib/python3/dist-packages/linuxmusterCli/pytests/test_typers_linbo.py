@@ -282,6 +282,65 @@ class TestLastsync:
         assert lines[0].split('\t')[-1] == 'Group'
         assert [line.split('\t')[-1] for line in lines[1:]] == ['win10', 'win10']
 
+    def _devices_with_version(self):
+        return {
+            'win10': {
+                'hosts': [
+                    {
+                        'hostname': 'pc01', 'ip': '10.0.0.1',
+                        'image': [{
+                            'image': 'win10.image', 'date': 1700000000,
+                            'imageVersion': '202601271107', 'status': 'success',
+                        }],
+                    },
+                    {
+                        'hostname': 'pc02', 'ip': '10.0.0.2',
+                        'image': [{
+                            'image': 'win10.image', 'date': 'Never',
+                            'imageVersion': None, 'status': 'danger',
+                        }],
+                    },
+                    {
+                        'hostname': 'pc03', 'ip': '10.0.0.3',
+                        'image': [{
+                            'image': 'win10.image', 'date': 1700000000,
+                            'imageVersion': 'not-a-timestamp', 'status': 'success',
+                        }],
+                    },
+                ]
+            },
+        }
+
+    def test_applied_image_version_is_shown_next_to_the_sync_date(self, runner, monkeypatch):
+        devices = self._devices_with_version()
+        monkeypatch.setattr(linbo, 'list_workstations', lambda **kw: devices)
+        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices: None)
+
+        result = runner.invoke(linbo.app, ['lastsync'])
+
+        assert result.exit_code == 0
+        # Rich wraps inside the cell when the terminal is too narrow, so the
+        # assertion is on the text, not on its layout.
+        assert '(image 2026-01-27 11:07)' in ' '.join(result.output.split())
+
+    def test_applied_image_version_is_exported_as_its_own_field(self, runner, monkeypatch):
+        devices = self._devices_with_version()
+        monkeypatch.setattr(linbo, 'list_workstations', lambda **kw: devices)
+        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices: None)
+        state.format = True
+        state.raw = True
+
+        result = runner.invoke(linbo.app, ['lastsync'])
+
+        assert result.exit_code == 0
+        rows = [line.split('\t') for line in result.output.splitlines() if line.strip()]
+        assert rows[0][3] == 'Applied version of win10.image'
+        assert rows[1][3] == '2026-01-27 11:07'
+        # A host which never synced the image has no version at all.
+        assert rows[2][3] == ''
+        # An unparsable timestamp is shown as it is rather than dropped.
+        assert rows[3][3] == 'not-a-timestamp'
+
     def _devices_by_status(self):
         return {
             'win10': {
