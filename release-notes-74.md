@@ -1,10 +1,10 @@
-# Release Notes – linuxmuster-cli7 7.4
+# 🚀 Release Notes – linuxmuster-cli7 7.4
 
 **Package version:** 7.4.1 – 7.4.10
 
 ---
 
-## Overview
+## 📋 Overview
 
 Version 7.4 rounds out the CLI with the last missing piece of password
 management, a new group-management typer, a usable `linbo lastsync` report,
@@ -13,7 +13,7 @@ of them silent failures that had gone unnoticed until now.
 
 ---
 
-## New typers
+## ✨ New typers
 
 - `lmncli passwd <user>`: manages a user's first (initial) and current login
   password — brings parity with the webui/API password management.
@@ -22,7 +22,7 @@ of them silent failures that had gone unnoticed until now.
 
 ---
 
-## LINBO lastsync report
+## 📊 LINBO lastsync report
 
 - `lmncli linbo lastsync` takes `-w`/`--warning` and `-d`/`--danger` to list
   only the devices in that state (yellow: not synchronised for more than 7
@@ -45,7 +45,7 @@ of them silent failures that had gone unnoticed until now.
 
 ---
 
-## Schoolclasses, teachers and students
+## 🏫 Schoolclasses, teachers and students
 
 - Teachers are now written to `sophomorixAdmins` as well as to the member
   list, which is where sophomorix and the webui read them from.
@@ -58,7 +58,7 @@ of them silent failures that had gone unnoticed until now.
 
 ---
 
-## Bug fixes
+## 🐛 Bug fixes
 
 - Fixed a shell injection in `lmncli version` (`dpkg -l` via `shell=True`).
 - Fixed several crashes: `student manage` (invalid `typer.Colors.RED`),
@@ -78,7 +78,7 @@ of them silent failures that had gone unnoticed until now.
 
 ---
 
-## GroupManager migration (breaking change for direct consumers)
+## ⚠️ GroupManager migration (breaking change for direct consumers)
 
 `students reset-internet` now uses `samba_util.GroupManager` instead of the
 deprecated `LMNMgmtGroup`: only students actually missing internet access
@@ -87,7 +87,7 @@ failures are collected and reported at the end, with a non-zero exit code.
 
 ---
 
-## Packaging
+## 📦 Packaging
 
 - postinst: the deprecated venv migration is dropped,
   `create_linuxmuster_venv()` being a no-op when the venv is already there.
@@ -96,7 +96,7 @@ failures are collected and reported at the end, with a non-zero exit code.
 
 ---
 
-## Miscellaneous
+## 🔧 Miscellaneous
 
 - `lastsync` adapted to `linuxmuster-tools`' new `last_sync_all()` return
   shape.
