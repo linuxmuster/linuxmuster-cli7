@@ -8,6 +8,7 @@ from rich import print
 
 from linuxmusterTools.ldapconnector import LMNLdapReader as lr, LMNGroup, find_legacy_groups
 from .state import state
+from linuxmusterTools.common import sort_naturally
 from .format import printf, outformat
 
 
@@ -25,7 +26,7 @@ def ls(
     groups_data = lr.get('/groups', school=school)
     groups_data = [g for g in groups_data if g['sophomorixType'] == 'lmngroup']
     groups_data = list(filter(lambda g: filter_str in g['cn'].lower(), groups_data))
-    groups_data = sorted(groups_data, key=lambda g: g['cn'])
+    groups_data = sort_naturally(groups_data, key=lambda g: g['cn'])
 
     groups = Table(title=f"{len(groups_data)} lmngroup(s)", show_lines=True)
     groups.add_column("Name", style="cyan")
@@ -143,7 +144,7 @@ def legacy(
         ):
 
     groups_data = find_legacy_groups(school=school)
-    groups_data = sorted(groups_data, key=lambda g: g['cn'])
+    groups_data = sort_naturally(groups_data, key=lambda g: g['cn'])
 
     groups = Table(title=f"{len(groups_data)} legacy sophomorix-group(s)", show_lines=True)
     groups.add_column("Name", style="cyan")

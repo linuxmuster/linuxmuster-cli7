@@ -7,6 +7,7 @@ from rich import print
 from linuxmusterTools.lmnfile import LMNFile
 from linuxmusterTools.ldapconnector import LMNLdapReader as lr
 from .state import state
+from linuxmusterTools.common import natural_key
 from .format import printf, outformat
 
 
@@ -30,7 +31,7 @@ def ls(
 
     with LMNFile(f'/etc/linuxmuster/sophomorix/{school}/{prefix}devices.csv', 'r') as f:
         devices_data = list(filter(lambda d: not d['room'].startswith("#"), f.read()))
-        devices_data = sorted(devices_data, key=lambda d: (d['room'], d['hostname']))
+        devices_data = sorted(devices_data, key=lambda d: (natural_key(d['room']), natural_key(d['hostname'])))
 
     devices_data = list(filter(
         lambda d: \

@@ -7,6 +7,7 @@ from rich import print
 from linuxmusterTools.lmnfile import LMNFile
 from linuxmusterTools.ldapconnector import LMNLdapReader as lr
 from .state import state
+from linuxmusterTools.common import sort_naturally
 from .format import printf, outformat
 
 
@@ -27,7 +28,7 @@ def ls(
     projects_data = lr.get('/projects', school=school)
 
     projects_data = list(filter(lambda p: filter_str in p['cn'].lower(), projects_data))
-    projects_data = sorted(projects_data, key=lambda p: p['cn'])
+    projects_data = sort_naturally(projects_data, key=lambda p: p['cn'])
 
     projects = Table(title=f"{len(projects_data)} project(s)", show_lines=True)
     projects.add_column("Name", style="cyan")
