@@ -473,3 +473,16 @@ class TestMigrate:
 
         assert result.exit_code == 1
         assert 'was not found in ldap' in result.output
+
+
+class TestLsOrder:
+
+    def test_lmngroups_are_sorted_naturally(self, runner, monkeypatch):
+        data = [dict(SAMPLE_GROUPS[1], cn=cn) for cn in ['club10', 'Band', 'club2']]
+        monkeypatch.setattr(lmngroup.lr, 'get', lambda url, **kw: list(data))
+
+        result = runner.invoke(lmngroup.app, ['ls'])
+
+        assert result.exit_code == 0
+        positions = [result.output.index(cn) for cn in ['Band', 'club2', 'club10']]
+        assert positions == sorted(positions)

@@ -543,3 +543,15 @@ class TestCleanup:
         assert [cn for cn, _ in FakeCleanup.calls] == ['a', 'b']
         assert 'boom' in result.output
         assert 'Could not clean up: a' in result.output
+
+
+class TestSortSchoolclasses:
+
+    def test_natural_order_digitless_last(self):
+        from linuxmusterCli.typers.format import sort_schoolclasses
+
+        schoolclasses = [sc(cn) for cn in ['abitur', '10b', '5b', 'k1', '5a']]
+
+        result = sort_schoolclasses(schoolclasses)
+
+        assert [s['cn'] for s in result] == ['5a', '5b', '10b', 'k1', 'abitur']

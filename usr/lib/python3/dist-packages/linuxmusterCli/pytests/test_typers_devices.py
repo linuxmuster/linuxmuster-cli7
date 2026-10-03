@@ -150,3 +150,25 @@ class TestLs:
         assert result.exit_code == 0
         assert 'r1\tpc1\tg1\t10.0.0.1\tAA:BB:CC:DD:EE:01\tworkstation\tRegistered' in result.output
         assert 'r2\tnomatch\tg2\t10.0.0.4\tAA:BB:CC:DD:EE:04\tworkstation\tNot registered' in result.output
+
+
+class TestLsOrder:
+
+    def test_rooms_and_hostnames_are_sorted_naturally(self, runner, monkeypatch):
+        rows = [
+            dict(SAMPLE_DEVICES[0], room=room, hostname=hostname)
+            for room, hostname in [('r10', 'r10-pc1'), ('r2', 'r2-pc10'), ('r2', 'r2-pc5')]
+        ]
+
+        class OrderLMNFile(FakeLMNFile):
+            def read(self):
+                return list(rows)
+
+        monkeypatch.setattr(devices, 'LMNFile', OrderLMNFile)
+        monkeypatch.setattr(devices.lr, 'get', lambda url, **kw: [])
+
+        result = runner.invoke(devices.app, [])
+
+        assert result.exit_code == 0
+        positions = [result.output.index(h) for h in ['r2-pc5', 'r2-pc10', 'r10-pc1']]
+        assert positions == sorted(positions)

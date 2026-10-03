@@ -75,3 +75,16 @@ class TestLs:
 
         assert result.exit_code == 0
         assert 'p_robotics\tjohndoe\tteacher1\t7a\t\tFalse\tTrue' in result.output
+
+
+class TestLsOrder:
+
+    def test_projects_are_sorted_naturally(self, runner, monkeypatch):
+        data = [dict(SAMPLE_PROJECTS[1], cn=cn) for cn in ['p_ag10', 'p_Chor', 'p_ag2']]
+        monkeypatch.setattr(projects.lr, 'get', lambda url, **kw: list(data))
+
+        result = runner.invoke(projects.app, [])
+
+        assert result.exit_code == 0
+        positions = [result.output.index(cn) for cn in ['p_ag2', 'p_ag10', 'p_Chor']]
+        assert positions == sorted(positions)
