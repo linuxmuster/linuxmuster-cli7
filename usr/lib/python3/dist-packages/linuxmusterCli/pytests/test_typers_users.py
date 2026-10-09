@@ -44,57 +44,55 @@ class TestLs:
         assert '(student)' in result.output
         assert '3 user(s)' in result.output
 
-    def test_admins_flag_selects_admins_url(self, runner, monkeypatch):
-        seen = {}
+    def test_role_flags_always_use_rawusers(self, runner, monkeypatch):
+        # /users/search/<role>/ builds full LMNUserModel objects, with one
+        # ldap request per student for its parents: ~1000 requests for -u.
+        seen = []
 
         def fake_get(url, **kw):
-            seen['url'] = url
+            seen.append(url)
             return []
 
         monkeypatch.setattr(users.lr, 'get', fake_get)
 
-        runner.invoke(users.app, ['--admins'])
+        for flags in ([], ['--admins'], ['--teachers'], ['--students']):
+            runner.invoke(users.app, flags)
 
-        assert seen['url'] == '/users/search/admins/'
+        assert seen == ['/rawusers'] * 4
 
-    def test_teachers_flag_selects_teacher_url(self, runner, monkeypatch):
-        seen = {}
+    def test_students_flag_keeps_only_students(self, runner, monkeypatch):
+        monkeypatch.setattr(users.lr, 'get', lambda url, **kw: list(SAMPLE_USERS))
 
-        def fake_get(url, **kw):
-            seen['url'] = url
-            return []
+        result = runner.invoke(users.app, ['--students'])
 
-        monkeypatch.setattr(users.lr, 'get', fake_get)
+        assert result.exit_code == 0
+        assert 'johndoe' in result.output
+        assert 'oldstu' in result.output
+        assert 'janeteach' not in result.output
+        assert '2 user(s)' in result.output
 
-        runner.invoke(users.app, ['--teachers'])
+    def test_teachers_flag_keeps_only_teachers(self, runner, monkeypatch):
+        monkeypatch.setattr(users.lr, 'get', lambda url, **kw: list(SAMPLE_USERS))
 
-        assert seen['url'] == '/users/search/teacher/'
+        result = runner.invoke(users.app, ['--teachers'])
 
-    def test_students_flag_selects_student_url(self, runner, monkeypatch):
-        seen = {}
+        assert 'janeteach' in result.output
+        assert 'johndoe' not in result.output
+        assert '1 user(s)' in result.output
 
-        def fake_get(url, **kw):
-            seen['url'] = url
-            return []
+    def test_admins_flag_keeps_global_and_school_admins(self, runner, monkeypatch):
+        admins = [
+            dict(SAMPLE_USERS[0], sAMAccountName='globadm', sophomorixRole='globaladministrator'),
+            dict(SAMPLE_USERS[0], sAMAccountName='schooladm', sophomorixRole='schooladministrator'),
+        ]
+        monkeypatch.setattr(users.lr, 'get', lambda url, **kw: list(SAMPLE_USERS) + admins)
 
-        monkeypatch.setattr(users.lr, 'get', fake_get)
+        result = runner.invoke(users.app, ['--admins'])
 
-        runner.invoke(users.app, ['--students'])
-
-        assert seen['url'] == '/users/search/student/'
-
-    def test_default_selects_rawusers_url(self, runner, monkeypatch):
-        seen = {}
-
-        def fake_get(url, **kw):
-            seen['url'] = url
-            return []
-
-        monkeypatch.setattr(users.lr, 'get', fake_get)
-
-        runner.invoke(users.app, [])
-
-        assert seen['url'] == '/rawusers'
+        assert 'globadm' in result.output
+        assert 'schooladm' in result.output
+        assert 'janeteach' not in result.output
+        assert '2 user(s)' in result.output
 
     def test_status_filters_users(self, runner, monkeypatch):
         monkeypatch.setattr(users.lr, 'get', lambda url, **kw: list(SAMPLE_USERS))

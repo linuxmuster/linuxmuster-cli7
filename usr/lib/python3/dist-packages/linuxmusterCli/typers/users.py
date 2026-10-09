@@ -27,17 +27,16 @@ def ls(
 
     filter_str = filter_str.lower()
 
+    roles = set()
     if admins:
-        url = '/users/search/admins/'
+        roles = {'globaladministrator', 'schooladministrator'}
     elif teachers:
-        url = '/users/search/teacher/'
+        roles = {'teacher'}
     elif students:
-        url = '/users/search/student/'
-    else:
-        url = '/rawusers'
+        roles = {'student'}
 
     users_data = lr.get(
-        url,
+        '/rawusers',
         attributes=[
             'displayName',
             'sn',
@@ -51,6 +50,9 @@ def ls(
         ],
         school = school,
     )
+
+    if roles:
+        users_data = [u for u in users_data if u['sophomorixRole'] in roles]
 
     users_data = list(filter(
         lambda u: filter_str in u['displayName'].lower() or filter_str in u['sAMAccountName'].lower() or filter_str in u['sophomorixAdminClass'].lower(), 
