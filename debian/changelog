@@ -1,3 +1,14 @@
+linuxmuster-cli7 (7.4.11) lmn74; urgency=medium
+
+  * Listings are sorted in natural order: schoolclasses (names without
+    any digit last), devices on room and hostname, lmngroups, printers
+    and projects.
+  * [users] "lmncli users ls" makes a single raw request and filters the
+    roles itself, which is faster.
+  * [packaging] Depends on linuxmuster-tools7 (>= 7.4.19).
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Sun, 11 Oct 2026 10:30:00 +0200
+
 linuxmuster-cli7 (7.4.10) lmn74; urgency=medium
 
   * [linbo] "lmncli linbo lastsync" now names the hardware group it is
