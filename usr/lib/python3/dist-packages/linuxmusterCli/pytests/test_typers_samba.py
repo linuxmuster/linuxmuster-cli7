@@ -193,7 +193,7 @@ class TestLastlogin:
     def test_golden_path(self, runner, monkeypatch):
         def fake_last_login(pattern, include_gz=False):
             return [{
-                'user': 'johndoe', 'ip': '10.0.0.1',
+                'user': 'johndoe', 'ip': '10.0.0.1', 'hostname': 'pc01',
                 'datetime': datetime.datetime(2026, 1, 1, 12, 0, 0),
             }]
 
@@ -203,7 +203,22 @@ class TestLastlogin:
 
         assert result.exit_code == 0
         assert 'johndoe' in result.output
+        assert 'pc01' in result.output
         assert '2026-01-01 12:00:00' in result.output
+
+    def test_unknown_hostname_shows_empty_cell(self, runner, monkeypatch):
+        def fake_last_login(pattern, include_gz=False):
+            return [{
+                'user': 'johndoe', 'ip': '10.0.0.99', 'hostname': None,
+                'datetime': datetime.datetime(2026, 1, 1, 12, 0, 0),
+            }]
+
+        monkeypatch.setattr(samba, 'last_login', fake_last_login)
+
+        result = runner.invoke(samba.app, ['lastlogin'])
+
+        assert result.exit_code == 0
+        assert 'None' not in result.output
 
     def test_empty_list_shows_empty_table(self, runner, monkeypatch):
         monkeypatch.setattr(samba, 'last_login', lambda pattern, include_gz=False: [])

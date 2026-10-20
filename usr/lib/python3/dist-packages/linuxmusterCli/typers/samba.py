@@ -184,12 +184,14 @@ def lastlogin(
     logins = Table()
     logins.add_column("User", style="green")
     logins.add_column("IP", style="cyan")
+    logins.add_column("Hostname", style="yellow")
     logins.add_column("Date", style="bright_magenta")
 
     data = [[c.header for c in logins.columns]]
     for entry in last_login(pattern, include_gz=all_logs):
-        logins.add_row(entry['user'], entry['ip'], str(entry['datetime']))
-        data.append([entry['user'], entry['ip'], str(entry['datetime'])])
+        row = [entry['user'], entry['ip'], entry['hostname'] or '', str(entry['datetime'])]
+        logins.add_row(*row)
+        data.append(row)
 
     if state.format:
         printf.format(data)
