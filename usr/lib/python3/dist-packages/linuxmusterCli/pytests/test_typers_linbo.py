@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 
 from linuxmusterCli.typers import linbo
 from linuxmusterCli.typers.state import state
@@ -171,7 +172,7 @@ class TestLastsync:
     def test_groups_with_no_hosts_or_no_images_are_skipped(self, runner, monkeypatch):
         devices = self._devices()
         monkeypatch.setattr(linbo, 'list_workstations', lambda **kw: devices)
-        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices: None)
+        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices, **kwargs: None)
 
         result = runner.invoke(linbo.app, ['lastsync'])
 
@@ -182,7 +183,7 @@ class TestLastsync:
     def test_never_synced_shows_no_date_found(self, runner, monkeypatch):
         devices = self._devices()
         monkeypatch.setattr(linbo, 'list_workstations', lambda **kw: devices)
-        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices: None)
+        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices, **kwargs: None)
 
         result = runner.invoke(linbo.app, ['lastsync'])
 
@@ -192,7 +193,7 @@ class TestLastsync:
     def test_real_epoch_is_formatted_as_date(self, runner, monkeypatch):
         devices = self._devices()
         monkeypatch.setattr(linbo, 'list_workstations', lambda **kw: devices)
-        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices: None)
+        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices, **kwargs: None)
 
         result = runner.invoke(linbo.app, ['lastsync'])
 
@@ -207,7 +208,7 @@ class TestLastsync:
             return self._devices()
 
         monkeypatch.setattr(linbo, 'list_workstations', fake_list_workstations)
-        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices: None)
+        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices, **kwargs: None)
 
         runner.invoke(linbo.app, ['lastsync', 'win10'])
 
@@ -221,7 +222,7 @@ class TestLastsync:
             return self._devices()
 
         monkeypatch.setattr(linbo, 'list_workstations', fake_list_workstations)
-        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices: None)
+        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices, **kwargs: None)
 
         runner.invoke(linbo.app, ['lastsync'])
 
@@ -236,7 +237,7 @@ class TestLastsync:
             return self._devices()
 
         monkeypatch.setattr(linbo, 'list_workstations', fake_list_workstations)
-        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices: None)
+        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices, **kwargs: None)
 
         result = runner.invoke(linbo.app, ['lastsync', 'win10', '--school', 'other-school'])
 
@@ -246,7 +247,7 @@ class TestLastsync:
     def test_raw_format_exports_scalars_not_the_sync_dict(self, runner, monkeypatch):
         devices = self._devices()
         monkeypatch.setattr(linbo, 'list_workstations', lambda **kw: devices)
-        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices: None)
+        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices, **kwargs: None)
         state.format = True
         state.raw = True
 
@@ -267,7 +268,7 @@ class TestLastsync:
     def test_group_name_is_shown_as_table_title(self, runner, monkeypatch):
         devices = self._devices()
         monkeypatch.setattr(linbo, 'list_workstations', lambda **kw: devices)
-        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices: None)
+        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices, **kwargs: None)
 
         result = runner.invoke(linbo.app, ['lastsync'])
 
@@ -278,7 +279,7 @@ class TestLastsync:
     def test_group_is_appended_to_exported_rows(self, runner, monkeypatch):
         devices = self._devices()
         monkeypatch.setattr(linbo, 'list_workstations', lambda **kw: devices)
-        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices: None)
+        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices, **kwargs: None)
         state.format = True
         state.raw = True
 
@@ -323,7 +324,7 @@ class TestLastsync:
     def test_applied_image_version_is_shown_next_to_the_sync_date(self, runner, monkeypatch):
         devices = self._devices_with_version()
         monkeypatch.setattr(linbo, 'list_workstations', lambda **kw: devices)
-        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices: None)
+        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices, **kwargs: None)
 
         result = runner.invoke(linbo.app, ['lastsync'])
 
@@ -335,7 +336,7 @@ class TestLastsync:
     def test_applied_image_version_is_exported_as_its_own_field(self, runner, monkeypatch):
         devices = self._devices_with_version()
         monkeypatch.setattr(linbo, 'list_workstations', lambda **kw: devices)
-        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices: None)
+        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices, **kwargs: None)
         state.format = True
         state.raw = True
 
@@ -381,7 +382,7 @@ class TestLastsync:
     def _patch_devices(self, monkeypatch):
         devices = self._devices_by_status()
         monkeypatch.setattr(linbo, 'list_workstations', lambda **kw: devices)
-        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices: None)
+        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices, **kwargs: None)
 
     def test_without_status_filter_all_hosts_are_shown(self, runner, monkeypatch):
         self._patch_devices(monkeypatch)
@@ -447,7 +448,7 @@ class TestLastsync:
             },
         }
         monkeypatch.setattr(linbo, 'list_workstations', lambda **kw: devices)
-        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices: None)
+        monkeypatch.setattr(linbo, 'last_sync_all', lambda devices, **kwargs: None)
 
         result = runner.invoke(linbo.app, ['lastsync', '--warning'])
 
@@ -455,3 +456,65 @@ class TestLastsync:
         assert 'pc-mixed' in result.output
         assert 'win10.image' in result.output
         assert 'ubuntu.image' in result.output
+
+    def _patch_last_start(self, monkeypatch):
+        devices = {
+            'win10': {
+                'hosts': [
+                    {
+                        'hostname': 'pc01', 'ip': '10.0.0.1',
+                        'image': [{'image': 'win10.image', 'date': 1700000000, 'status': 'success'}],
+                    },
+                    {
+                        'hostname': 'pc02', 'ip': '10.0.0.2',
+                        'image': [{'image': 'win10.image', 'date': 'Never', 'status': 'danger'}],
+                    },
+                ]
+            },
+        }
+        calls = []
+
+        def fake_last_sync_all(devices, laststart=False):
+            calls.append(laststart)
+            if laststart:
+                devices['win10']['hosts'][0]['lastStart'] = {'date': 1700000000, 'os': 'Windows 10'}
+                devices['win10']['hosts'][1]['lastStart'] = 'Never'
+
+        monkeypatch.setattr(linbo, 'list_workstations', lambda **kw: devices)
+        monkeypatch.setattr(linbo, 'last_sync_all', fake_last_sync_all)
+        return calls
+
+    def test_last_start_is_not_read_by_default(self, runner, monkeypatch):
+        calls = self._patch_last_start(monkeypatch)
+
+        result = runner.invoke(linbo.app, ['lastsync'])
+
+        assert result.exit_code == 0
+        assert calls == [False]
+        assert 'Last start' not in result.output
+
+    def test_last_start_option_shows_date_and_os(self, runner, monkeypatch):
+        calls = self._patch_last_start(monkeypatch)
+
+        result = runner.invoke(linbo.app, ['lastsync', '--last-start'])
+
+        assert result.exit_code == 0
+        assert calls == [True]
+        output = ' '.join(result.output.split())
+        assert '(Windows 10)' in output
+        assert 'No start found' in output
+
+    def test_last_start_is_exported_after_the_group(self, runner, monkeypatch):
+        self._patch_last_start(monkeypatch)
+        state.format = True
+        state.raw = True
+
+        result = runner.invoke(linbo.app, ['lastsync', '-l'])
+
+        assert result.exit_code == 0
+        rows = [line.split('\t') for line in result.output.splitlines() if line.strip()]
+        # The existing columns keep their position.
+        assert rows[0][:2] == ['Hostname', 'IP']
+        assert rows[0][-3:] == ['Group', 'Last start', 'Last started OS']
+        assert rows[1][-2:] == [datetime.fromtimestamp(1700000000).strftime('%Y-%m-%d %H:%M'), 'Windows 10']
+        assert rows[2][-2:] == ['Never', '']

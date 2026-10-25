@@ -81,6 +81,7 @@ def lastsync(
     school: Annotated[str, typer.Option("--school", "-s")] = 'default-school',
     warning: Annotated[bool, typer.Option("--warning", "-w", help="Only show devices with a warning status (yellow, not synchronised for more than 7 days).")] = False,
     danger: Annotated[bool, typer.Option("--danger", "-d", help="Only show devices with a danger status (red, never synchronised or not for more than 30 days).")] = False,
+    last_start: Annotated[bool, typer.Option("--last-start", "-l", help="Also show the last OS start of each device, read from its linbo.log.")] = False,
 ):
     # Temporary UGLY solution. The code in linuxmusterTools must be rewritten
 
@@ -125,12 +126,23 @@ def lastsync(
             rendered += f' [dim](image {version})[/dim]'
         return rendered
 
+    def format_start(start):
+        if start == 'Never':
+            return '[dim]No start found[/dim]'
+        date = datetime.fromtimestamp(start['date']).strftime('%c')
+        return f"{date} [dim]({start['os'] or 'unknown OS'})[/dim]"
+
+    def start_fields(start):
+        if start == 'Never':
+            return ['Never', '']
+        return [datetime.fromtimestamp(start['date']).strftime('%Y-%m-%d %H:%M'), start['os'] or '']
+
     if group:
         devices = list_workstations(school=school, groups=[group])
     else:
         devices = list_workstations(school=school)
 
-    last_sync_all(devices)
+    last_sync_all(devices, laststart=last_start)
 
     for grp, hosts in devices.items():
         images = []
@@ -146,6 +158,8 @@ def lastsync(
         sync = Table(title=f"Group {grp} ({len(filtered_hosts)} device(s))")
         sync.add_column('Hostname', style="cyan")
         sync.add_column('IP', style="cyan")
+        if last_start:
+            sync.add_column('Last start')
         data = [[c.header for c in sync.columns]]
         for image in images:
             sync.add_column(f'Last synchronisation for {image}')
@@ -156,12 +170,18 @@ def lastsync(
             data[0].append(f'Applied version of {image}')
         
         data[0].append('Group')
+        if last_start:
+            data[0].remove('Last start')
+            data[0].append('Last start')
+            data[0].append('Last started OS')
 
         for host in filtered_hosts:
             sync_by_image = {d['image']: d for d in host['image']}
+            start_cells = [format_start(host['lastStart'])] if last_start else []
             sync.add_row(
                 host['hostname'],
                 host['ip'],
+                *start_cells,
                 *[format(sync_by_image[image]) for image in images]
             )
             sync_fields = []
@@ -178,7 +198,8 @@ def lastsync(
                 host['hostname'],
                 host['ip'],
                 *sync_fields,
-                grp
+                grp,
+                *(start_fields(host['lastStart']) if last_start else [])
             ])
 
         if state.format:
