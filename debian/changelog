@@ -1,3 +1,16 @@
+linuxmuster-cli7 (7.4.12) lmn74; urgency=medium
+
+  * [linbo] "lmncli linbo lastsync -l" also shows the last OS start of
+    each device and the name of the started OS, read from its
+    linbo.log. The csv and raw exports get "Last start" and "Last
+    started OS" columns.
+  * [samba] "lmncli samba lastlogin" shows the hostname of the client,
+    resolved from devices.csv, and no longer lists the administrator
+    account.
+  * [packaging] Depends on linuxmuster-tools7 (>= 7.4.20).
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Sun, 25 Oct 2026 22:45:00 +0100
+
 linuxmuster-cli7 (7.4.11) lmn74; urgency=medium
 
   * Listings are sorted in natural order: schoolclasses (names without
