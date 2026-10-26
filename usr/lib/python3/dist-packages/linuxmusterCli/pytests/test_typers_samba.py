@@ -11,7 +11,11 @@ class FakeSMBConnections:
 
     def __init__(self, school):
         self.school = school
-        self.users = {'johndoe': SimpleNamespace(machine='10.0.0.1', hostname='pc01')}
+        self.connections = {'johndoe': [
+            SimpleNamespace(machine='10.0.0.1', hostname='pc01'),
+            SimpleNamespace(machine='10.0.0.2', hostname='pc02'),
+        ]}
+        self.users = {'johndoe': self.connections['johndoe'][0]}
         self.machines = {}
 
     def get_machines(self):
@@ -125,6 +129,9 @@ class TestStatus:
 
         assert result.exit_code == 0
         assert 'johndoe' in result.output
+        # All connections of a user, not only the most recent one
+        assert 'pc01' in result.output
+        assert 'pc02' in result.output
         assert 'Machine' not in result.output
 
     def test_machines_only_hides_users_table(self, runner, monkeypatch):

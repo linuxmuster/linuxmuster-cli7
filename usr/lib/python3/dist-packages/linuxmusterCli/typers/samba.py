@@ -95,17 +95,18 @@ def status(
         users_connections.add_column("Hostname", style="cyan")
 
         data = [[c.header for c in users_connections.columns]]
-        for user,details in conn.users.items():
-            users_connections.add_row(
+        for user, connections in conn.connections.items():
+            for details in connections:
+                users_connections.add_row(
+                        user,
+                        details.machine,
+                        details.hostname,
+                )
+                data.append([
                     user,
                     details.machine,
                     details.hostname,
-            )
-            data.append([
-                user,
-                details.machine,
-                details.hostname,
-            ])
+                ])
 
         if state.format:
             printf.format(data)
