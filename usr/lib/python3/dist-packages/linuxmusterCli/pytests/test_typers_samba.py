@@ -12,14 +12,14 @@ class FakeSMBConnections:
     def __init__(self, school):
         self.school = school
         self.connections = {'johndoe': [
-            SimpleNamespace(machine='10.0.0.1', hostname='pc01'),
-            SimpleNamespace(machine='10.0.0.2', hostname='pc02'),
+            SimpleNamespace(machine='10.0.0.1', hostname='pc01', auth_time='2026-10-26T19:27:40.168787+01:00'),
+            SimpleNamespace(machine='10.0.0.2', hostname='pc02', auth_time='2026-10-26T19:02:43.717022+01:00'),
         ]}
         self.users = {'johndoe': self.connections['johndoe'][0]}
         self.machines = {}
 
     def get_machines(self):
-        self.machines = {'pc01': SimpleNamespace(machine='10.0.0.1')}
+        self.machines = {'pc01': SimpleNamespace(machine='10.0.0.1', auth_time='2026-10-26T11:32:17.720598+01:00')}
 
 
 class FakeSmbstatusModule:
@@ -132,6 +132,7 @@ class TestStatus:
         # All connections of a user, not only the most recent one
         assert 'pc01' in result.output
         assert 'pc02' in result.output
+        assert '2026-10-26 19:27:40' in result.output
         assert 'Machine' not in result.output
 
     def test_machines_only_hides_users_table(self, runner, monkeypatch):
@@ -141,6 +142,7 @@ class TestStatus:
 
         assert result.exit_code == 0
         assert 'Machine' in result.output
+        assert '2026-10-26 11:32:17' in result.output
         assert 'johndoe' not in result.output
 
     def test_both_flags_together_shows_all_again(self, runner, monkeypatch):

@@ -1,4 +1,5 @@
 import typer
+from datetime import datetime
 from typing_extensions import Annotated
 
 from rich.console import Console
@@ -93,19 +94,23 @@ def status(
         users_connections.add_column("User", style="green")
         users_connections.add_column("IP", style="yellow")
         users_connections.add_column("Hostname", style="cyan")
+        users_connections.add_column("Date")
 
         data = [[c.header for c in users_connections.columns]]
         for user, connections in conn.connections.items():
             for details in connections:
+                date = datetime.fromisoformat(details.auth_time).strftime('%Y-%m-%d %H:%M:%S')
                 users_connections.add_row(
                         user,
                         details.machine,
                         details.hostname,
+                        date,
                 )
                 data.append([
                     user,
                     details.machine,
                     details.hostname,
+                    date,
                 ])
 
         if state.format:
@@ -117,17 +122,21 @@ def status(
         machines_connections = Table()
         machines_connections.add_column("Machine", style="green")
         machines_connections.add_column("IP", style="cyan")
+        machines_connections.add_column("Date")
 
         conn.get_machines()
         data = [[c.header for c in machines_connections.columns]]
         for machine, details in conn.machines.items():
+            date = datetime.fromisoformat(details.auth_time).strftime('%Y-%m-%d %H:%M:%S')
             machines_connections.add_row(
                     machine,
                     details.machine,
+                    date,
             )
             data.append([
                 machine,
                 details.machine,
+                date,
             ])
 
         if state.format:
