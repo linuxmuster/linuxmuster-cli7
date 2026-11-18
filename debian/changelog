@@ -1,3 +1,11 @@
+linuxmuster-cli7 (7.4.13) lmn74; urgency=medium
+
+  * [samba] "lmncli samba status" lists every connection of each user,
+    with the date of login.
+  * Depends on linuxmuster-tools7 (>= 7.4.21).
+
+ -- Arnaud Kientz <arnaud@linuxmuster.net>  Wed, 18 Nov 2026 09:05:50 +0100
+
 linuxmuster-cli7 (7.4.12) lmn74; urgency=medium
 
   * [linbo] "lmncli linbo lastsync -l" also shows the last OS start of
